@@ -1,0 +1,27 @@
+.homepage {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.btn_hp {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 10px;
+  text-decoration: none;
+}
+.btn_hp:hover {
+  box-sizing: border-box;
+  border: 1px solid black;
+}

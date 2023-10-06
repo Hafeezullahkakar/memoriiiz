@@ -1,0 +1,54 @@
+.header {
+  background-color: #0e0808;
+  color: #fff;
+  padding: 20px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.burger-menu {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.bar {
+  background-color: #fff;
+  height: 3px;
+  width: 25px;
+  margin: 3px 0;
+}
+
+.logo {
+  font-size: 1.5rem;
+  text-decoration: none;
+  color: #fff;
+}
+
+.nav {
+  display: flex;
+}
+
+.nav-link {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .burger-menu {
+    display: flex;
+  }
+
+  .nav {
+  }
+  .signinBtn {
+    display: none;
+  }
+
+  .nav-link {
+    margin: 10px;
+  }
+}
