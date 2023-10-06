@@ -11,15 +11,27 @@ const wordRoutes = require("./routes/WordRoute");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://deploy-mern-"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 app.use(bodyParser.json());
 
-mongoose.connect(`${process.env.MONGO_URL}`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(r=>console.log("Connected to DB successfully!"));
+mongoose
+  .connect(`${process.env.MONGO_URL}`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then((r) => console.log("Connected to DB successfully!"));
 
 app.use("/api", wordRoutes);
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
