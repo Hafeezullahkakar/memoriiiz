@@ -11,21 +11,24 @@ const wordRoutes = require("./routes/WordRoute");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(
+  cors()
+);
 
 app.use(bodyParser.json());
 
 mongoose
-  .connect(`${process.env.MONGO_URL}`, {
+  .connect(`mongodb+srv://hafeezullah2023:hafeezullah2023@cluster0.vddszir.mongodb.net/memoriiiz`, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then((r) => console.log("Connected to DB successfully!"));
 
 app.use("/api", wordRoutes);
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+
+app.get('/', (req, res) => {
+  res.send('Hey this is my API running 🥳')
+})
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

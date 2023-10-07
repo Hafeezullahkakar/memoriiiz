@@ -27,7 +27,7 @@ const ViewAllWords = () => {
         // );
         setWords(response?.data);
         setLoading(false);
-        console.log("data fetched:", response);
+        // console.log("data fetched:", response);
       } catch (error) {
         console.error("Error fetching words:", error);
       }
@@ -53,7 +53,7 @@ const ViewAllWords = () => {
   const navigate = useNavigate();
 
   const handleUpdate = (id) => {
-    console.log("id in viewall: ", id);
+    // console.log("id in viewall: ", id);
     navigate("/addword", { state: id });
   };
 

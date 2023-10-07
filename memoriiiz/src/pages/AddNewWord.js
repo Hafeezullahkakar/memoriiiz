@@ -75,7 +75,7 @@ const AddNewWord = () => {
         const response = await axios.post(`https://memoriiiz.vercel.app/api/addWord`, newWord);
         console.log("Word added successfully:", response.data);
         toast.success("Word Added Successfully!");
-        navigate("/wordlist");
+        navigate("/wordslist");
       } catch (error) {
         console.error("Error adding word:", error);
       }
@@ -87,7 +87,7 @@ const AddNewWord = () => {
         );
         console.log("Word added successfully:", response.data);
         toast.success("Word Editted Successfully!");
-        navigate("/wordlist");
+        navigate("/wordslist");
       } catch (error) {
         console.error("Error adding word:", error);
       }
