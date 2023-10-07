@@ -11,13 +11,7 @@ const wordRoutes = require("./routes/WordRoute");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(
-  cors({
-    origin: ["https://deploy-mern-"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+app.use(cors());
 
 app.use(bodyParser.json());
 

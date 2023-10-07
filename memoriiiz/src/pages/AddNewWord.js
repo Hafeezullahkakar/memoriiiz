@@ -10,7 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const AddNewWord = () => {
   const location = useLocation();
   const { state } = location;
-  console.log("state is : ", state);
+  // console.log("state is : ", state);
 
   // const [words, setWords] = useState([]);
 
@@ -19,7 +19,8 @@ const AddNewWord = () => {
       const fetchWords = async () => {
         try {
           const response = await axios.get(
-            `${process.env.REACT_APP_URI}/getWordById/${state}`
+            `https://memoriiiz.vercel.app/api/getWordById/${state}`
+            // `${process.env.REACT_APP_URI}/getWordById/${state}`
           );
 
 
@@ -70,7 +71,8 @@ const AddNewWord = () => {
 
     if (!state) {
       try {
-        const response = await axios.post(`${URI2}/addWord`, newWord);
+        // const response = await axios.post(`${URI2}/addWord`, newWord);
+        const response = await axios.post(`https://memoriiiz.vercel.app/api/addWord`, newWord);
         console.log("Word added successfully:", response.data);
         toast.success("Word Added Successfully!");
         navigate("/wordlist");

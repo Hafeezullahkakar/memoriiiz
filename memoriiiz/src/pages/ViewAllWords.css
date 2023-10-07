@@ -17,15 +17,22 @@
   width: 300px;
   height: 300px;
   padding: 10px;
-  background-color: #fff6c7;
+  /* background-image: url("https://images.pexels.com/photos/5722994/pexels-photo-5722994.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"); */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color:rgb(254, 254, 254); /* Added opacity */
   border: none;
+  color: #000;
   border-radius: 8px;
   margin: 10px;
   position: relative;
   box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px,
     rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+  backdrop-filter: blur(5px); /* Added backdrop filter for blur effect */
 }
+
 .frontt {
   font-size: 2rem;
 }
@@ -47,4 +54,15 @@
   position: absolute;
   align-items: space-between;
   bottom: 8px;
+}
+
+.skeleton {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  @media screen and (max-width: 767px) {
+    flex-direction: column;
+    margin: 5px;
+  }
 }
