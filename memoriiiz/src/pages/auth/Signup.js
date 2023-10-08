@@ -1,10 +1,26 @@
-import React from "react";
+import React, { Component } from "react";
+
 import "./Auth.css";
-const Login = () => {
+
+const SignUp = () => {
   return (
-    <div className="loginPage">
+    <div className="signupPage">
       <form>
-        <h3>Sign In</h3>
+        <h3>Sign Up</h3>
+
+        <div className="mb-3">
+          {/* <label>First name</label> */}
+          <input
+            type="text"
+            className="form-control"
+            placeholder="First name"
+          />
+        </div>
+
+        <div className="mb-3">
+          {/* <label>Last name</label> */}
+          <input type="text" className="form-control" placeholder="Last name" />
+        </div>
 
         <div className="mb-3">
           {/* <label>Email address</label> */}
@@ -24,30 +40,17 @@ const Login = () => {
           />
         </div>
 
-        {/* <div className="mb-3">
-          <div className="custom-control custom-checkbox">
-            <input
-              type="checkbox"
-              className="custom-control-input"
-              id="customCheck1"
-            />
-            <label className="custom-control-label" htmlFor="customCheck1">
-              Remember me
-            </label>
-          </div>
-        </div> */}
-
         <div className="d-grid">
           <button type="submit" className="btn btn-primary">
-            Login
+            Sign Up
           </button>
         </div>
         <p className="forgot-password text-right">
-          Forgot <a href="#">password?</a>
+          Already registered <a href="/login">sign in?</a>
         </p>
       </form>
     </div>
   );
 };
 
-export default Login;
+export default SignUp;

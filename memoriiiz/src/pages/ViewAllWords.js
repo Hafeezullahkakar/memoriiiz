@@ -106,14 +106,14 @@ const ViewAllWords = () => {
               flipDirection="vertical"
               key={index}
             >
-              <div className="card__ frontt">
+              <div className="card__ frontt"  onClick={() => handleClick(index)}>
                 <h4>{word?.word}</h4>{" "}
-                <button className="btn" onClick={() => handleClick(index)}>
+                {/* <button className="btn" onClick={() => handleClick(index)}>
                   Show Details
-                </button>
+                </button> */}
               </div>
 
-              <div className="card__">
+              <div className="card__" onClick={() => handleClick(index)}>
                 <p>
                   <b>Meaning: </b> <i>{word?.meaning}</i>
                 </p>
@@ -131,14 +131,14 @@ const ViewAllWords = () => {
                 </p>
                 <div className="buttonDiv">
                   {/* <button className="btn" onClick={() => handleClick(index)}> */}
-                  <BsPhoneFlip
+                  {/* <BsPhoneFlip
                     onClick={() => handleClick(index)}
                     style={{
                       fontSize: "1.5rem",
                       marginRight: "1rem",
                       cursor: "pointer",
                     }}
-                  />
+                  /> */}
                   {/* </button> */}
                   {/* <button className="btn" onClick={() => handleClick(index)}> */}
                   <RiDeleteBinLine
