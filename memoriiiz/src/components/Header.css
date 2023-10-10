@@ -52,3 +52,13 @@
     margin: 10px;
   }
 }
+
+.footer {
+  width: 100%;
+  background-color: #0e0808;
+  color: #fff;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

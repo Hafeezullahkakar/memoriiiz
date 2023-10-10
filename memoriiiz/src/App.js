@@ -19,6 +19,7 @@ import ViewAllWords from "./pages/ViewAllWords";
 import Login from "./pages/auth/Login";
 import About from "./pages/About";
 import Signup from "./pages/auth/Signup";
+import Chat from "./pages/chat/Chat";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/addword" element={<AddNewWord />} />
           <Route path="/wordslist" element={<ViewAllWords />} />
           <Route path="/about" element={<About />} />
+          <Route path="/chat" element={<Chat />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
         </Routes>

@@ -10,6 +10,7 @@ import { BsPhoneFlip } from "react-icons/bs";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
 import { Typography } from "@mui/material";
+import FlipCard from "../components/flipcard/FlipCard";
 
 const ViewAllWords = () => {
   const [words, setWords] = useState([]);
@@ -69,7 +70,7 @@ const ViewAllWords = () => {
 
   return (
     <div className="wordlistpage">
-      <h1>Word List</h1>
+      <h1 style={{ margin: "20px" }}>Word List</h1>
 
       <div className="allCards">
         {loading ? (
@@ -101,64 +102,66 @@ const ViewAllWords = () => {
           </div>
         ) : (
           words?.map((word, index) => (
-            <ReactCardFlip
-              isFlipped={flippedCards[index]}
-              flipDirection="vertical"
-              key={index}
-            >
-              <div className="card__ frontt"  onClick={() => handleClick(index)}>
-                <h4>{word?.word}</h4>{" "}
-                {/* <button className="btn" onClick={() => handleClick(index)}>
-                  Show Details
-                </button> */}
-              </div>
+            // <ReactCardFlip
+            //   isFlipped={flippedCards[index]}
+            //   flipDirection="horizontal"
+            //   key={index}
+            //   containerStyle={{ perspective: "1000px" }}
+            // >
+            //   <div className="card__ frontt" onClick={() => handleClick(index)}>
+            //     <h4>{word?.word}</h4>{" "}
+            //     {/* <button className="btn" onClick={() => handleClick(index)}>
+            //       Show Details
+            //     </button> */}
+            //   </div>
 
-              <div className="card__" onClick={() => handleClick(index)}>
-                <p>
-                  <b>Meaning: </b> <i>{word?.meaning}</i>
-                </p>
-                <p>
-                  <b>Sentences: </b>
-                  <br></br>
-                  {word?.sentences?.map((sent, index) => {
-                    return (
-                      <p>
-                        {index + 1}. <i>{sent}</i>
-                        <br></br>
-                      </p>
-                    );
-                  })}
-                </p>
-                <div className="buttonDiv">
-                  {/* <button className="btn" onClick={() => handleClick(index)}> */}
-                  {/* <BsPhoneFlip
-                    onClick={() => handleClick(index)}
-                    style={{
-                      fontSize: "1.5rem",
-                      marginRight: "1rem",
-                      cursor: "pointer",
-                    }}
-                  /> */}
-                  {/* </button> */}
-                  {/* <button className="btn" onClick={() => handleClick(index)}> */}
-                  <RiDeleteBinLine
-                    onClick={() => handleDelete(word?._id)}
-                    style={{
-                      fontSize: "1.5rem",
-                      marginRight: "1rem",
-                      cursor: "pointer",
-                    }}
-                  />
-                  {/* </button> */}
-                  {/* <button className="btn" onClick={() => handleClick(index)}> */}
-                  <FiEdit
-                    onClick={() => handleUpdate(word?._id)}
-                    style={{ fontSize: "1.5rem", cursor: "pointer" }}
-                  />
-                  {/* </button> */}
-                </div>
-              </div>
-            </ReactCardFlip>
+            //   <div className="card__" onClick={() => handleClick(index)}>
+            //     <p>
+            //       <b>Meaning: </b> <i>{word?.meaning}</i>
+            //     </p>
+            //     <p>
+            //       <b>Sentences: </b>
+            //       <br></br>
+            //       {word?.sentences?.map((sent, index) => {
+            //         return (
+            //           <p>
+            //             {index + 1}. <i>{sent}</i>
+            //             <br></br>
+            //           </p>
+            //         );
+            //       })}
+            //     </p>
+            //     <div className="buttonDiv">
+            //       {/* <button className="btn" onClick={() => handleClick(index)}> */}
+            //       {/* <BsPhoneFlip
+            //         onClick={() => handleClick(index)}
+            //         style={{
+            //           fontSize: "1.5rem",
+            //           marginRight: "1rem",
+            //           cursor: "pointer",
+            //         }}
+            //       /> */}
+            //       {/* </button> */}
+            //       {/* <button className="btn" onClick={() => handleClick(index)}> */}
+            //       <RiDeleteBinLine
+            //         onClick={() => handleDelete(word?._id)}
+            //         style={{
+            //           fontSize: "1.5rem",
+            //           marginRight: "1rem",
+            //           cursor: "pointer",
+            //         }}
+            //       />
+            //       {/* </button> */}
+            //       {/* <button className="btn" onClick={() => handleClick(index)}> */}
+            //       <FiEdit
+            //         onClick={() => handleUpdate(word?._id)}
+            //         style={{ fontSize: "1.5rem", cursor: "pointer" }}
+            //       />
+            //       {/* </button> */}
+            //     </div>
+            //   </div>
+            // </ReactCardFlip>
+            <FlipCard cardfront={word?.word} cardBack={word?.meaning} />
           ))
         )}
       </div>
