@@ -1,10 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-
 const cors = require("cors");
 require("dotenv").config();
 const wordRoutes = require("./routes/WordRoute");
+const userRoutes = require("./routes/UserRoute");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,6 +24,7 @@ mongoose
   .then((r) => console.log("Connected to DB successfully!"));
 
 app.use("/api", wordRoutes);
+app.use("/user", userRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hey this is my API running 🥳");

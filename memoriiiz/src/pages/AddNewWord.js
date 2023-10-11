@@ -7,12 +7,13 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { useSelector } from "react-redux";
+import { selectToken } from "../redux/authSlice";
+
 const AddNewWord = () => {
   const location = useLocation();
   const { state } = location;
-  // console.log("state is : ", state);
-
-  // const [words, setWords] = useState([]);
+  const token = useSelector(selectToken);
 
   useEffect(() => {
     if (state) {
@@ -22,18 +23,11 @@ const AddNewWord = () => {
             `https://memoriiiz.vercel.app/api/getWordById/${state}`
             // `${process.env.REACT_APP_URI}/getWordById/${state}`
           );
-
-
-
           setWord(response?.data?.word);
           setMeaning(response?.data?.meaning);
           setPicture(response?.data?.picture);
           setVideo(response?.data?.video);
           setSentences([...response?.data?.sentences]);
-
-          console.log("all word property: ", response?.data);
-
-          // console.log("data fetched:", response);
         } catch (error) {
           console.error("Error fetching words:", error);
         }
@@ -72,7 +66,15 @@ const AddNewWord = () => {
     if (!state) {
       try {
         // const response = await axios.post(`${URI2}/addWord`, newWord);
-        const response = await axios.post(`https://memoriiiz.vercel.app/api/addWord`, newWord);
+        const response = await axios.post(
+          `https://memoriiiz.vercel.app/api/addWord`,
+          newWord,
+          {
+            headers: {
+              "x-auth-token": token,
+            },
+          }
+        );
         console.log("Word added successfully:", response.data);
         toast.success("Word Added Successfully!");
         navigate("/wordslist");
@@ -82,8 +84,13 @@ const AddNewWord = () => {
     } else {
       try {
         const response = await axios.put(
-          `${URI2}/updateWord/${state}`,
-          newWord
+          `https://memoriiiz.vercel.app/api/updateWord/${state}`,
+          newWord,
+          {
+            headers: {
+              "x-auth-token": token,
+            },
+          }
         );
         console.log("Word added successfully:", response.data);
         toast.success("Word Editted Successfully!");

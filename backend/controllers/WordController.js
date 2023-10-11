@@ -1,19 +1,42 @@
 const Word = require("../models/WordModel");
 
 // Create a new word
-exports.addWord = async (req, res) => {
-  const { word, meaning, picture, video, sentences } = req.body;
+const jwt = require("jsonwebtoken");
 
-  const newWord = new Word({
-    word,
-    meaning,
-    picture,
-    video,
-    sentences,
-  });
+exports.addWord = async (req, res) => {
+  console.log("inside add wordtop;;;;")
+  const { word, meaning, picture, video, sentences } = req.body;
+  console.log("inside addwrod controller: ", req.boy)
+  console.log("heaeder addwrod controller: ", req.header)
+
+  // Get the user ID from the token
+  const token = req.header("x-auth-token");
+  console.log("token in add word from header: ", token);
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Authorization denied. No token provided." });
+  }
 
   try {
+    const decoded = jwt.verify(token, "memoriiz");
+    const userId = decoded.id;
+
+    // Create a new word linked to the user ID
+    const newWord = new Word({
+      word,
+      meaning,
+      picture,
+      video,
+      sentences,
+      user: userId, // Associate the word with the user
+    });
+
     const savedWord = await newWord.save();
+   
+    // Add the word's ID to the user's list of words
+    await User.findByIdAndUpdate(userId, { $push: { words: savedWord._id } });
+
     res.json(savedWord);
   } catch (err) {
     res.status(400).json({ message: err.message });
