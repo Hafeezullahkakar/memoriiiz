@@ -25,7 +25,8 @@ const SignUp = () => {
 
     try {
       const response = await axios
-        .post("http://localhost:3001/user/register", formData)
+        .post("https://memoriiiz.vercel.app/user/register", formData)
+        // .post("http://localhost:3001/user/register", formData)
         .then((res) => {
           toast.success("signed up successfully!");
           navigate("/login");

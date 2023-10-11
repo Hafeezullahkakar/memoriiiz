@@ -30,7 +30,8 @@ const Login = () => {
 
     try {
       const response = await axios
-        .post("http://localhost:3001/user/login", formData)
+        .post("https://memoriiiz.vercel.app/user/login", formData)
+        // .post("http://localhost:3001/user/login", formData)
         .then((res) => {
           const token = res?.data?.token;
           const user = res?.data?.user;
