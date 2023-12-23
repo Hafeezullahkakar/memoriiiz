@@ -55,7 +55,7 @@ const FlipCard = ({ singleWord, setWords }) => {
                 {index + 1}. <i>{sent}</i>
                 <br></br>
               </p>
-            );
+            )
           })}
           <div className="buttonDiv">
             <RiDeleteBinLine
@@ -71,7 +71,7 @@ const FlipCard = ({ singleWord, setWords }) => {
               style={{ fontSize: "1.5rem", cursor: "pointer" }}
             />
           </div>
-          ;
+          
         </div>
       </div>
     </ReactCardFlip>
