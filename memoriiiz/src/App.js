@@ -22,6 +22,7 @@ import About from "./pages/About";
 import Signup from "./pages/auth/Signup";
 import Chat from "./pages/chat/Chat";
 import GREPage from "./pages/GREPage";
+import GREPlay from "./pages/GREPlay";
 import { ColorModeProvider } from "./theme/ThemeContext";
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
             <Route path="/addword" element={<AddNewWord />} />
             <Route path="/wordslist" element={<ViewAllWords />} />
             <Route path="/gre" element={<GREPage />} />
+            <Route path="/greplay" element={<GREPlay />} />
             <Route path="/about" element={<About />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/login" element={<Login />} />

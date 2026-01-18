@@ -39,6 +39,7 @@ function Footer() {
             <Stack spacing={1}>
               <Link href="/wordslist" underline="none" color="inherit">General Vocabulary</Link>
               <Link href="/gre" underline="none" color="inherit">GRE Prep</Link>
+              <Link href="/greplay" underline="none" color="inherit">GRE Play</Link>
               <Link href="/addword" underline="none" color="inherit">Contribute Word</Link>
             </Stack>
           </Grid>

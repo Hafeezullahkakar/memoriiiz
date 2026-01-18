@@ -20,7 +20,7 @@ import { ColorModeContext } from "../theme/ThemeContext";
 
 import { selectUser, selectToken } from "../redux/authSlice";
 import { MdAutoAwesome } from "react-icons/md";
-const pages = ["GRE Prep", "General Vocabulary", "Contribute Word", "About"];
+const pages = ["GRE Prep", "GRE Play", "General Vocabulary", "Contribute Word", "About"];
 // const settings = ["Profile", "Account", "Dashboard", "Logout"];
 const settings = ["Account", "Logout"];
 
@@ -126,6 +126,7 @@ function Header() {
               {pages.map((page) => {
                 let path = page.toLowerCase();
                 if (page === "GRE Prep") path = "gre";
+                if (page === "GRE Play") path = "greplay";
                 if (page === "General Vocabulary") path = "wordslist";
                 if (page === "Contribute Word") path = "addword";
                 
@@ -171,6 +172,7 @@ function Header() {
             {pages.map((page) => {
               let path = page.toLowerCase();
               if (page === "GRE Prep") path = "gre";
+              if (page === "GRE Play") path = "greplay";
               if (page === "General Vocabulary") path = "wordslist";
               if (page === "Contribute Word") path = "addword";
 
