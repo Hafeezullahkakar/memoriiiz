@@ -14,6 +14,34 @@ const FlipCard = ({ singleWord, setWords }) => {
   const isDark = theme.palette.mode === 'dark';
   const [isFlipped2, setIsFlipped2] = useState(false);
 
+  // Predefined beautiful gradients for card fronts
+  const gradients = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Deep Purple
+    'linear-gradient(135deg, #2af598 0%, #009efd 100%)', // Sea Breeze
+    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', // Soft Pink
+    'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', // Soft Blue
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', // Pink/Orange
+    'linear-gradient(135deg, #5ee7df 0%, #b490d0 100%)', // Teal/Purple
+    'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)', // Lime/Green
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', // Sunset
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', // Bright Blue
+    'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', // Violet/Blue
+    'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)', // Sky Blue
+    'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', // Peach
+    'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', // Lavender
+    'linear-gradient(135deg, #e0c3fc 8%, #8ec5fc 100%)', // Pastel Blue
+    'linear-gradient(135deg, #f067b4 0%, #81ffef 100%)'  // Dreamy
+  ];
+
+  // Get a stable gradient based on the word's ID or string hash
+  const getGradient = (id) => {
+    if (!id) return gradients[0];
+    const charSum = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return gradients[charSum % gradients.length];
+  };
+
+  const cardGradient = getGradient(singleWord?._id || singleWord?.word);
+
   const handleClick2 = useCallback((e) => {
     e.preventDefault();
     setIsFlipped2((prevState) => !prevState);
@@ -73,7 +101,28 @@ const FlipCard = ({ singleWord, setWords }) => {
 
   return (
     <ReactCardFlip isFlipped={isFlipped2} flipDirection="horizontal">
-      <div className="card__ frontt" onClick={handleClick2} style={{ position: 'relative' }}>
+      <div 
+        className="card__ frontt" 
+        onClick={handleClick2} 
+        style={{ 
+          position: 'relative',
+          backgroundImage: cardGradient,
+          border: 'none',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Subtle decorative circle */}
+        <div style={{
+          position: 'absolute',
+          top: '-20%',
+          right: '-10%',
+          width: '60%',
+          height: '60%',
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.1)',
+          zIndex: 1
+        }} />
+        
         <div style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '12px', alignItems: 'center', zIndex: 10 }}>
             <HiOutlineSpeakerWave 
               onClick={handleSpeak}
@@ -99,7 +148,7 @@ const FlipCard = ({ singleWord, setWords }) => {
               {singleWord.status || 'To Learn'}
             </span>
         </div>
-        <h4 style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)', margin: 0 }}>{singleWord?.word}</h4>
+        <h4 style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)', margin: 0, zIndex: 2, position: 'relative' }}>{singleWord?.word}</h4>
       </div>
 
       <div className="card__" onClick={handleClick2} style={{ 

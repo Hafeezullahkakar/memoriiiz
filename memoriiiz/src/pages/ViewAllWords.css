@@ -73,11 +73,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("https://images.pexels.com/photos/2597937/pexels-photo-2597937.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
   color: #fff;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
   border: none;
 }
 
