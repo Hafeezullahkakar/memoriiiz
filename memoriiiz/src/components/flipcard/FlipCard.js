@@ -3,6 +3,7 @@ import ReactCardFlip from "react-card-flip";
 
 import { RiDeleteBinLine } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
+import { HiOutlineSpeakerWave } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -36,6 +37,17 @@ const FlipCard = ({ singleWord, setWords }) => {
     navigate("/addword", { state: id });
   };
 
+  const handleSpeak = (e) => {
+    e.stopPropagation();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(singleWord?.word);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      toast.error("Speech synthesis not supported in this browser");
+    }
+  };
+
   const toggleStatus = async (e) => {
     e.stopPropagation();
     const newStatus = singleWord.status === "Known" ? "To Learn" : "Known";
@@ -58,8 +70,12 @@ const FlipCard = ({ singleWord, setWords }) => {
 
   return (
     <ReactCardFlip isFlipped={isFlipped2} flipDirection="horizontal">
-      <div className="card__ frontt" onClick={handleClick2}>
-        <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
+      <div className="card__ frontt" onClick={handleClick2} style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '10px', alignItems: 'center', zIndex: 10 }}>
+            <HiOutlineSpeakerWave 
+              onClick={handleSpeak}
+              style={{ fontSize: '1.5rem', cursor: 'pointer', color: 'white' }}
+            />
             <span 
               onClick={toggleStatus}
               style={{ 
@@ -77,8 +93,12 @@ const FlipCard = ({ singleWord, setWords }) => {
         <h4>{singleWord?.word}</h4>
       </div>
 
-      <div className="card__" onClick={handleClick2}>
-        <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
+      <div className="card__" onClick={handleClick2} style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', zIndex: 10 }}>
+            <HiOutlineSpeakerWave 
+              onClick={handleSpeak}
+              style={{ fontSize: '1.5rem', cursor: 'pointer' }}
+            />
             <span 
               onClick={toggleStatus}
               style={{ 
@@ -93,21 +113,24 @@ const FlipCard = ({ singleWord, setWords }) => {
               {singleWord.status || 'To Learn'}
             </span>
         </div>
-        <div>
-          <b>Meaning: </b> <i>{singleWord?.meaning}</i>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          <div>
+            <b>Meaning: </b> <i>{singleWord?.meaning}</i>
+          </div>
+          <div>
+            <b>Sentences: </b>
+            <br></br>
+            {singleWord?.sentences?.map((sent, index) => {
+              return (
+                <p key={index}>
+                  {index + 1}. <i>{sent}</i>
+                  <br></br>
+                </p>
+              )
+            })}
+          </div>
         </div>
-        <div>
-          <b>Sentences: </b>
-          <br></br>
-          {singleWord?.sentences?.map((sent, index) => {
-            return (
-              <p>
-                {index + 1}. <i>{sent}</i>
-                <br></br>
-              </p>
-            )
-          })}
-          <div className="buttonDiv">
+        <div className="buttonDiv" style={{ position: 'relative', marginTop: 'auto', paddingTop: '10px' }}>
             <RiDeleteBinLine
               onClick={() => handleDelete(singleWord?._id)}
               style={{
@@ -120,8 +143,6 @@ const FlipCard = ({ singleWord, setWords }) => {
               onClick={() => handleUpdate(singleWord?._id)}
               style={{ fontSize: "1.5rem", cursor: "pointer" }}
             />
-          </div>
-          
         </div>
       </div>
     </ReactCardFlip>
