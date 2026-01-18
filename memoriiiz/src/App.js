@@ -20,6 +20,7 @@ import Login from "./pages/auth/Login";
 import About from "./pages/About";
 import Signup from "./pages/auth/Signup";
 import Chat from "./pages/chat/Chat";
+import GREPage from "./pages/GREPage";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route index element={<Homepage />} />
           <Route path="/addword" element={<AddNewWord />} />
           <Route path="/wordslist" element={<ViewAllWords />} />
+          <Route path="/gre" element={<GREPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/login" element={<Login />} />

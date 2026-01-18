@@ -52,6 +52,16 @@ exports.getAllWords = async (req, res) => {
   }
 };
 
+// Get words by type
+exports.getWordsByType = async (req, res) => {
+  try {
+    const words = await Word.find({ type: req.params.type });
+    res.json(words);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Get a specific word by ID
 exports.getWordById = async (req, res) => {
   try {

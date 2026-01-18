@@ -16,7 +16,7 @@ import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "react-router-dom";
 
 import { selectUser, selectToken } from "../redux/authSlice";
-const pages = ["Wordslist", "Add Word", "About"];
+const pages = ["GRE", "Wordslist", "Add Word", "About"];
 // const settings = ["Profile", "Account", "Dashboard", "Logout"];
 const settings = ["Account", "Logout"];
 
