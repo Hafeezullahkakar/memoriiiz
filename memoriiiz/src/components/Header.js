@@ -12,10 +12,10 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "react-router-dom";
 
 import { selectUser, selectToken } from "../redux/authSlice";
+import { MdAutoAwesome } from "react-icons/md";
 const pages = ["GRE", "Wordslist", "Add Word", "About"];
 // const settings = ["Profile", "Account", "Dashboard", "Logout"];
 const settings = ["Account", "Logout"];
@@ -53,10 +53,12 @@ function Header() {
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "white", color: "black" }}>
+    <AppBar position="sticky" elevation={0} sx={{ backgroundColor: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(10px)", color: "black", borderBottom: "1px solid #eee" }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+          <Box sx={{ display: { xs: "none", md: "flex" }, mr: 1, color: '#1976d2' }}>
+            <MdAutoAwesome size={24} />
+          </Box>
 
           <Typography
             variant="h6"
@@ -64,18 +66,18 @@ function Header() {
             component="a"
             href="/"
             sx={{
-              mr: 2,
+              mr: 4,
               display: { xs: "none", md: "flex" },
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 800,
+              letterSpacing: ".1rem",
               color: "inherit",
               textDecoration: "none",
             }}
           >
             <Link
               to="/"
-              style={{ color: "inherit", textDecoration: "inherit" }}
+              style={{ color: "#1a1a1a", textDecoration: "none" }}
             >
               Memoriiiz
             </Link>
@@ -112,25 +114,19 @@ function Header() {
             >
               {pages.map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">
-                    <Link
-                      to={`/${page.trim().toLowerCase().replace(/\s/g, "")}`}
-                      style={{ textDecoration: "none", color: "inherit" }}
-                      sx={{
-                        display: "block",
-                        width: "100%",
-                        height: "100%",
-                        p: "16px",
-                      }}
-                    >
-                      {page}
-                    </Link>
-                  </Typography>
+                  <Link
+                    to={`/${page.trim().toLowerCase().replace(/\s/g, "")}`}
+                    style={{ textDecoration: "none", color: "inherit", width: '100%' }}
+                  >
+                    <Typography textAlign="center">{page}</Typography>
+                  </Link>
                 </MenuItem>
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
+          <Box sx={{ display: { xs: "flex", md: "none" }, mr: 1, color: '#1976d2' }}>
+             <MdAutoAwesome size={24} />
+          </Box>
           <Typography
             variant="h5"
             noWrap
@@ -139,16 +135,16 @@ function Header() {
               mr: 2,
               display: { xs: "flex", md: "none" },
               flexGrow: 1,
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 800,
+              letterSpacing: ".1rem",
               color: "inherit",
               textDecoration: "none",
             }}
           >
             <Link
               to="/"
-              style={{ color: "inherit", textDecoration: "inherit" }}
+              style={{ color: "#1a1a1a", textDecoration: "none" }}
             >
               Memoriiiz
             </Link>
@@ -158,17 +154,19 @@ function Header() {
               <Button
                 key={page}
                 onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: "black", display: "block" }}
+                sx={{ 
+                  my: 2, 
+                  color: "#555", 
+                  display: "block", 
+                  textTransform: 'none', 
+                  fontWeight: 600,
+                  px: 2,
+                  "&:hover": { color: '#1976d2' }
+                }}
               >
                 <Link
                   to={`/${page.trim().toLowerCase().replace(/\s/g, "")}`}
                   style={{ textDecoration: "none", color: "inherit" }}
-                  sx={{
-                    display: "block",
-                    width: "100%",
-                    height: "100%",
-                    p: "16px",
-                  }}
                 >
                   {page}
                 </Link>

@@ -71,77 +71,94 @@ const FlipCard = ({ singleWord, setWords }) => {
   return (
     <ReactCardFlip isFlipped={isFlipped2} flipDirection="horizontal">
       <div className="card__ frontt" onClick={handleClick2} style={{ position: 'relative' }}>
-        <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '10px', alignItems: 'center', zIndex: 10 }}>
+        <div style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '12px', alignItems: 'center', zIndex: 10 }}>
             <HiOutlineSpeakerWave 
               onClick={handleSpeak}
-              style={{ fontSize: '1.5rem', cursor: 'pointer', color: 'white' }}
+              style={{ fontSize: '1.6rem', cursor: 'pointer', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
             />
             <span 
               onClick={toggleStatus}
               style={{ 
-                fontSize: '0.8rem', 
-                padding: '4px 8px', 
-                borderRadius: '12px', 
+                fontSize: '0.75rem', 
+                fontWeight: 'bold',
+                padding: '5px 12px', 
+                borderRadius: '20px', 
                 backgroundColor: singleWord.status === 'Known' ? '#4caf50' : '#ff9800',
                 color: 'white',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}
             >
               {singleWord.status || 'To Learn'}
             </span>
         </div>
-        <h4>{singleWord?.word}</h4>
+        <h4 style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)', margin: 0 }}>{singleWord?.word}</h4>
       </div>
 
-      <div className="card__" onClick={handleClick2} style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', zIndex: 10 }}>
+      <div className="card__" onClick={handleClick2} style={{ position: 'relative', display: 'flex', flexDirection: 'column', backgroundColor: '#fff' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', zIndex: 10 }}>
             <HiOutlineSpeakerWave 
               onClick={handleSpeak}
-              style={{ fontSize: '1.5rem', cursor: 'pointer' }}
+              style={{ fontSize: '1.6rem', cursor: 'pointer', color: '#1976d2' }}
             />
             <span 
               onClick={toggleStatus}
               style={{ 
-                fontSize: '0.8rem', 
-                padding: '4px 8px', 
-                borderRadius: '12px', 
-                backgroundColor: singleWord.status === 'Known' ? '#4caf50' : '#ff9800',
-                color: 'white',
-                cursor: 'pointer'
+                fontSize: '0.75rem', 
+                fontWeight: 'bold',
+                padding: '5px 12px', 
+                borderRadius: '20px', 
+                backgroundColor: singleWord.status === 'Known' ? '#e8f5e9' : '#fff3e0',
+                color: singleWord.status === 'Known' ? '#2e7d32' : '#ef6c00',
+                border: `1px solid ${singleWord.status === 'Known' ? '#4caf50' : '#ff9800'}`,
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}
             >
               {singleWord.status || 'To Learn'}
             </span>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          <div>
-            <b>Meaning: </b> <i>{singleWord?.meaning}</i>
+        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px' }}>
+          <div style={{ marginBottom: '15px' }}>
+            <b style={{ color: '#1976d2', display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Meaning</b> 
+            <i style={{ fontSize: '1.1rem', color: '#444' }}>{singleWord?.meaning}</i>
           </div>
           <div>
-            <b>Sentences: </b>
-            <br></br>
+            <b style={{ color: '#1976d2', display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Sentences</b>
             {singleWord?.sentences?.map((sent, index) => {
               return (
-                <p key={index}>
-                  {index + 1}. <i>{sent}</i>
-                  <br></br>
+                <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: '#555', lineHeight: '1.5' }}>
+                  <span style={{ color: '#1976d2', fontWeight: 'bold', marginRight: '5px' }}>{index + 1}.</span> <i>{sent}</i>
                 </p>
               )
             })}
           </div>
         </div>
-        <div className="buttonDiv" style={{ position: 'relative', marginTop: 'auto', paddingTop: '10px' }}>
+        <div className="buttonDiv" style={{ position: 'relative', marginTop: 'auto', paddingTop: '15px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
             <RiDeleteBinLine
-              onClick={() => handleDelete(singleWord?._id)}
+              onClick={(e) => { e.stopPropagation(); handleDelete(singleWord?._id); }}
               style={{
-                fontSize: "1.5rem",
-                marginRight: "1rem",
+                fontSize: "1.4rem",
                 cursor: "pointer",
+                color: '#d32f2f',
+                transition: 'transform 0.2s',
               }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
             />
             <FiEdit
-              onClick={() => handleUpdate(singleWord?._id)}
-              style={{ fontSize: "1.5rem", cursor: "pointer" }}
+              onClick={(e) => { e.stopPropagation(); handleUpdate(singleWord?._id); }}
+              style={{ 
+                fontSize: "1.4rem", 
+                cursor: "pointer", 
+                color: '#1976d2',
+                transition: 'transform 0.2s',
+              }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
             />
         </div>
       </div>

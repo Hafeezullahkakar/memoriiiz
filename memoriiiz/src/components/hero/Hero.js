@@ -13,39 +13,49 @@ import { red, blue } from "@mui/material/colors";
 
 function Hero() {
   const ColorButton = styled(Button)(({ theme }) => ({
-    color: theme.palette.getContrastText(blue[50]),
-    backgroundColor: "white",
-    borderRadius: "30px",
-    padding: "7px 30px",
+    color: "white",
+    backgroundColor: "#1976d2",
+    borderRadius: "8px",
+    padding: "12px 35px",
+    fontSize: "1.1rem",
     "&:hover": {
-      backgroundColor: blue[700],
-      color: "white",
+      backgroundColor: "#1565c0",
     },
   }));
 
   return (
     <div className="comingsoonpage">
       <div className="left_S">
-        {/* <img src={logos} alt="logo" className="logoCS" /> */}
         <div className="det">
-          <h2>Memoriiiz: Your Vocabulary Best Friend!</h2>
+          <h2>Master Your Vocabulary with Memoriiiz</h2>
           <p>
-            Elevate your lexicon, one word at a time. Welcome to the ultimate
-            destination for avid word learners and memory maestros!
+            The smartest way to learn and retain new words. Whether you're 
+            preparing for GRE, TOEFL, or just expanding your horizon, 
+            we help you make it stick.
           </p>
-          <Link to="/about" className="">
-            <ColorButton variant="success" className="getStartedBtn">
-              Learn More
-            </ColorButton>
-            {/* Add new Word */}
-          </Link>
+          <Stack spacing={2} direction="row">
+            <Link to="/wordslist" style={{ textDecoration: 'none' }}>
+              <ColorButton variant="contained" className="getStartedBtn">
+                Get Started
+              </ColorButton>
+            </Link>
+            <Link to="/about" style={{ textDecoration: 'none' }}>
+              <Button 
+                variant="outlined" 
+                sx={{ 
+                  borderRadius: "8px", 
+                  padding: "12px 35px", 
+                  fontSize: "1.1rem",
+                  marginTop: "10px",
+                  borderWidth: "2px",
+                  "&:hover": { borderWidth: "2px" }
+                }}
+              >
+                Learn More
+              </Button>
+            </Link>
+          </Stack>
         </div>
-        {/* <Link to="/wordslist" className="btn_hp">
-          View All Words
-        </Link> */}
-
-        {/* <Stack spacing={2} direction="row"> */}
-        {/* </Stack> */}
       </div>
       <div className="right_S"></div>
     </div>
