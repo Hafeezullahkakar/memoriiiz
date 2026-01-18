@@ -13,14 +13,20 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { Link } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { ColorModeContext } from "../theme/ThemeContext";
 
 import { selectUser, selectToken } from "../redux/authSlice";
 import { MdAutoAwesome } from "react-icons/md";
-const pages = ["GRE", "Wordslist", "Add Word", "About"];
+const pages = ["GRE Prep", "General Vocabulary", "Contribute Word", "About"];
 // const settings = ["Profile", "Account", "Dashboard", "Logout"];
 const settings = ["Account", "Logout"];
 
 function Header() {
+  const theme = useTheme();
+  const colorMode = React.useContext(ColorModeContext);
   const userr = useSelector(selectUser);
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -53,10 +59,15 @@ function Header() {
   };
 
   return (
-    <AppBar position="sticky" elevation={0} sx={{ backgroundColor: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(10px)", color: "black", borderBottom: "1px solid #eee" }}>
+    <AppBar position="sticky" elevation={0} sx={{ 
+      backgroundColor: theme.palette.mode === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(10, 25, 41, 0.8)', 
+      backdropFilter: "blur(10px)", 
+      color: theme.palette.text.primary, 
+      borderBottom: `1px solid ${theme.palette.divider}` 
+    }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Box sx={{ display: { xs: "none", md: "flex" }, mr: 1, color: '#1976d2' }}>
+          <Box sx={{ display: { xs: "none", md: "flex" }, mr: 1, color: 'primary.main' }}>
             <MdAutoAwesome size={24} />
           </Box>
 
@@ -77,7 +88,7 @@ function Header() {
           >
             <Link
               to="/"
-              style={{ color: "#1a1a1a", textDecoration: "none" }}
+              style={{ color: theme.palette.text.primary, textDecoration: "none" }}
             >
               Memoriiiz
             </Link>
@@ -112,19 +123,26 @@ function Header() {
                 display: { xs: "block", md: "none" },
               }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Link
-                    to={`/${page.trim().toLowerCase().replace(/\s/g, "")}`}
-                    style={{ textDecoration: "none", color: "inherit", width: '100%' }}
-                  >
-                    <Typography textAlign="center">{page}</Typography>
-                  </Link>
-                </MenuItem>
-              ))}
+              {pages.map((page) => {
+                let path = page.toLowerCase();
+                if (page === "GRE Prep") path = "gre";
+                if (page === "General Vocabulary") path = "wordslist";
+                if (page === "Contribute Word") path = "addword";
+                
+                return (
+                  <MenuItem key={page} onClick={handleCloseNavMenu}>
+                    <Link
+                      to={`/${path}`}
+                      style={{ textDecoration: "none", color: "inherit", width: '100%' }}
+                    >
+                      <Typography textAlign="center">{page}</Typography>
+                    </Link>
+                  </MenuItem>
+                );
+              })}
             </Menu>
           </Box>
-          <Box sx={{ display: { xs: "flex", md: "none" }, mr: 1, color: '#1976d2' }}>
+          <Box sx={{ display: { xs: "flex", md: "none" }, mr: 1, color: 'primary.main' }}>
              <MdAutoAwesome size={24} />
           </Box>
           <Typography
@@ -144,37 +162,49 @@ function Header() {
           >
             <Link
               to="/"
-              style={{ color: "#1a1a1a", textDecoration: "none" }}
+              style={{ color: theme.palette.text.primary, textDecoration: "none" }}
             >
               Memoriiiz
             </Link>
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages.map((page) => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ 
-                  my: 2, 
-                  color: "#555", 
-                  display: "block", 
-                  textTransform: 'none', 
-                  fontWeight: 600,
-                  px: 2,
-                  "&:hover": { color: '#1976d2' }
-                }}
-              >
-                <Link
-                  to={`/${page.trim().toLowerCase().replace(/\s/g, "")}`}
-                  style={{ textDecoration: "none", color: "inherit" }}
+            {pages.map((page) => {
+              let path = page.toLowerCase();
+              if (page === "GRE Prep") path = "gre";
+              if (page === "General Vocabulary") path = "wordslist";
+              if (page === "Contribute Word") path = "addword";
+
+              return (
+                <Button
+                  key={page}
+                  onClick={handleCloseNavMenu}
+                  sx={{ 
+                    my: 2, 
+                    color: theme.palette.text.secondary, 
+                    display: "block", 
+                    textTransform: 'none', 
+                    fontWeight: 600,
+                    px: 2,
+                    "&:hover": { color: 'primary.main' }
+                  }}
                 >
-                  {page}
-                </Link>
-              </Button>
-            ))}
+                  <Link
+                    to={`/${path}`}
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    {page}
+                  </Link>
+                </Button>
+              );
+            })}
           </Box>
 
-          <Box sx={{ flexGrow: 0 }}>
+          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tooltip title={`Switch to ${theme.palette.mode === 'light' ? 'dark' : 'light'} mode`}>
+              <IconButton onClick={colorMode.toggleColorMode} color="inherit">
+                {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+              </IconButton>
+            </Tooltip>
             {user ? (
               <>
                 <Tooltip title="Open settings">

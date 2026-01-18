@@ -7,8 +7,11 @@ import { HiOutlineSpeakerWave } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useTheme } from "@mui/material/styles";
 
 const FlipCard = ({ singleWord, setWords }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const [isFlipped2, setIsFlipped2] = useState(false);
 
   const handleClick2 = useCallback((e) => {
@@ -83,7 +86,9 @@ const FlipCard = ({ singleWord, setWords }) => {
                 fontWeight: 'bold',
                 padding: '5px 12px', 
                 borderRadius: '20px', 
-                backgroundColor: singleWord.status === 'Known' ? '#4caf50' : '#ff9800',
+                backgroundColor: singleWord.status === 'Known' 
+                    ? (isDark ? 'rgba(76, 175, 80, 0.9)' : '#4caf50') 
+                    : (isDark ? 'rgba(255, 152, 0, 0.9)' : '#ff9800'),
                 color: 'white',
                 cursor: 'pointer',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
@@ -97,11 +102,18 @@ const FlipCard = ({ singleWord, setWords }) => {
         <h4 style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)', margin: 0 }}>{singleWord?.word}</h4>
       </div>
 
-      <div className="card__" onClick={handleClick2} style={{ position: 'relative', display: 'flex', flexDirection: 'column', backgroundColor: '#fff' }}>
+      <div className="card__" onClick={handleClick2} style={{ 
+        position: 'relative', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderColor: theme.palette.divider
+      }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', zIndex: 10 }}>
             <HiOutlineSpeakerWave 
               onClick={handleSpeak}
-              style={{ fontSize: '1.6rem', cursor: 'pointer', color: '#1976d2' }}
+              style={{ fontSize: '1.6rem', cursor: 'pointer', color: theme.palette.primary.main }}
             />
             <span 
               onClick={toggleStatus}
@@ -110,8 +122,12 @@ const FlipCard = ({ singleWord, setWords }) => {
                 fontWeight: 'bold',
                 padding: '5px 12px', 
                 borderRadius: '20px', 
-                backgroundColor: singleWord.status === 'Known' ? '#e8f5e9' : '#fff3e0',
-                color: singleWord.status === 'Known' ? '#2e7d32' : '#ef6c00',
+                backgroundColor: singleWord.status === 'Known' 
+                    ? (isDark ? 'rgba(76, 175, 80, 0.2)' : '#e8f5e9') 
+                    : (isDark ? 'rgba(255, 152, 0, 0.2)' : '#fff3e0'),
+                color: singleWord.status === 'Known' 
+                    ? (isDark ? '#81c784' : '#2e7d32') 
+                    : (isDark ? '#ffb74d' : '#ef6c00'),
                 border: `1px solid ${singleWord.status === 'Known' ? '#4caf50' : '#ff9800'}`,
                 cursor: 'pointer',
                 textTransform: 'uppercase',
@@ -123,21 +139,21 @@ const FlipCard = ({ singleWord, setWords }) => {
         </div>
         <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px' }}>
           <div style={{ marginBottom: '15px' }}>
-            <b style={{ color: '#1976d2', display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Meaning</b> 
-            <i style={{ fontSize: '1.1rem', color: '#444' }}>{singleWord?.meaning}</i>
+            <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Meaning</b> 
+            <i style={{ fontSize: '1.1rem', color: theme.palette.text.primary }}>{singleWord?.meaning}</i>
           </div>
           <div>
-            <b style={{ color: '#1976d2', display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Sentences</b>
+            <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Sentences</b>
             {singleWord?.sentences?.map((sent, index) => {
               return (
-                <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: '#555', lineHeight: '1.5' }}>
-                  <span style={{ color: '#1976d2', fontWeight: 'bold', marginRight: '5px' }}>{index + 1}.</span> <i>{sent}</i>
+                <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: theme.palette.text.secondary, lineHeight: '1.5' }}>
+                  <span style={{ color: theme.palette.primary.main, fontWeight: 'bold', marginRight: '5px' }}>{index + 1}.</span> <i>{sent}</i>
                 </p>
               )
             })}
           </div>
         </div>
-        <div className="buttonDiv" style={{ position: 'relative', marginTop: 'auto', paddingTop: '15px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
+        <div className="buttonDiv" style={{ position: 'relative', marginTop: 'auto', paddingTop: '15px', borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
             <RiDeleteBinLine
               onClick={(e) => { e.stopPropagation(); handleDelete(singleWord?._id); }}
               style={{
@@ -154,7 +170,7 @@ const FlipCard = ({ singleWord, setWords }) => {
               style={{ 
                 fontSize: "1.4rem", 
                 cursor: "pointer", 
-                color: '#1976d2',
+                color: theme.palette.primary.main,
                 transition: 'transform 0.2s',
               }}
               onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
