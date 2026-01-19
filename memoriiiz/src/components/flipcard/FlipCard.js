@@ -3,16 +3,27 @@ import ReactCardFlip from "react-card-flip";
 
 import { RiDeleteBinLine } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
-import { HiOutlineSpeakerWave } from "react-icons/hi2";
+import { HiOutlineSpeakerWave, HiOutlineSpeakerXMark } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { 
+  Box, 
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogContentText, 
+  DialogTitle, 
+  Button 
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
 const FlipCard = ({ singleWord, setWords }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const [isFlipped2, setIsFlipped2] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   // Predefined beautiful gradients for card fronts
   const gradients = [
@@ -47,7 +58,18 @@ const FlipCard = ({ singleWord, setWords }) => {
     setIsFlipped2((prevState) => !prevState);
   }, []);
 
-  const handleDelete = async (id) => {
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = (e) => {
+    if (e) e.stopPropagation();
+    setOpenDeleteDialog(false);
+  };
+
+  const handleConfirmDelete = async (id) => {
+    setOpenDeleteDialog(false);
     try {
       await axios
         .delete(`https://memoriiiz.vercel.app/api/deleteWord/${id}`)
@@ -58,6 +80,7 @@ const FlipCard = ({ singleWord, setWords }) => {
         });
     } catch (error) {
       console.error(`Error deleting word with ID ${id}:`, error);
+      toast.error("Failed to delete word");
     }
   };
 
@@ -71,6 +94,12 @@ const FlipCard = ({ singleWord, setWords }) => {
   const handleSpeak = (e) => {
     e.stopPropagation();
     if ("speechSynthesis" in window) {
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+        return;
+      }
+
       window.speechSynthesis.cancel();
       
       let textToSpeak = singleWord?.word || "";
@@ -85,6 +114,11 @@ const FlipCard = ({ singleWord, setWords }) => {
       }
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+
       window.speechSynthesis.speak(utterance);
     } else {
       toast.error("Speech synthesis not supported in this browser");
@@ -112,134 +146,203 @@ const FlipCard = ({ singleWord, setWords }) => {
   };
 
   return (
-    <ReactCardFlip isFlipped={isFlipped2} flipDirection="horizontal">
-      <div 
-        className="card__ frontt" 
-        onClick={handleClick2} 
-        style={{ 
-          position: 'relative',
-          backgroundImage: cardGradient,
-          border: 'none',
-          overflow: 'hidden'
+    <>
+      <ReactCardFlip isFlipped={isFlipped2} flipDirection="horizontal">
+        <div 
+          className="card__ frontt" 
+          onClick={handleClick2} 
+          style={{ 
+            position: 'relative',
+            backgroundImage: cardGradient,
+            border: 'none',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Subtle decorative circle */}
+          <div style={{
+            position: 'absolute',
+            top: '-20%',
+            right: '-10%',
+            width: '60%',
+            height: '60%',
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.1)',
+            zIndex: 1
+          }} />
+          
+          <div style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '12px', alignItems: 'center', zIndex: 10 }}>
+              {isSpeaking ? (
+                <HiOutlineSpeakerXMark 
+                  onClick={handleSpeak}
+                  style={{ fontSize: '1.6rem', cursor: 'pointer', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
+                />
+              ) : (
+                <HiOutlineSpeakerWave 
+                  onClick={handleSpeak}
+                  style={{ fontSize: '1.6rem', cursor: 'pointer', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
+                />
+              )}
+              <span 
+                onClick={toggleStatus}
+                style={{ 
+                  fontSize: '0.75rem', 
+                  fontWeight: 'bold',
+                  padding: '5px 12px', 
+                  borderRadius: '20px', 
+                  backgroundColor: singleWord.status === 'Known' 
+                      ? (isDark ? 'rgba(76, 175, 80, 0.9)' : '#4caf50') 
+                      : (isDark ? 'rgba(255, 152, 0, 0.9)' : '#ff9800'),
+                  color: 'white',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                {singleWord.status || 'To Learn'}
+              </span>
+          </div>
+          <h4 style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)', margin: 0, zIndex: 2, position: 'relative' }}>{singleWord?.word}</h4>
+        </div>
+
+        <div className="card__" onClick={handleClick2} style={{ 
+          position: 'relative', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          borderColor: theme.palette.divider
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center', marginBottom: '15px', zIndex: 10 }}>
+              {isSpeaking ? (
+                <HiOutlineSpeakerXMark 
+                  onClick={handleSpeak}
+                  style={{ fontSize: '1.6rem', cursor: 'pointer', color: theme.palette.primary.main }}
+                />
+              ) : (
+                <HiOutlineSpeakerWave 
+                  onClick={handleSpeak}
+                  style={{ fontSize: '1.6rem', cursor: 'pointer', color: theme.palette.primary.main }}
+                />
+              )}
+              <span 
+                onClick={toggleStatus}
+                style={{ 
+                  fontSize: '0.75rem', 
+                  fontWeight: 'bold',
+                  padding: '5px 12px', 
+                  borderRadius: '20px', 
+                  backgroundColor: singleWord.status === 'Known' 
+                      ? (isDark ? 'rgba(76, 175, 80, 0.2)' : '#e8f5e9') 
+                      : (isDark ? 'rgba(255, 152, 0, 0.2)' : '#fff3e0'),
+                  color: singleWord.status === 'Known' 
+                      ? (isDark ? '#81c784' : '#2e7d32') 
+                      : (isDark ? '#ffb74d' : '#ef6c00'),
+                  border: `1px solid ${singleWord.status === 'Known' ? '#4caf50' : '#ff9800'}`,
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                {singleWord.status || 'To Learn'}
+              </span>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px', minHeight: 0 }}>
+            <div style={{ marginBottom: '15px' }}>
+              <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Meaning</b> 
+              <i style={{ fontSize: '1.1rem', color: theme.palette.text.primary, wordBreak: 'break-word' }}>{singleWord?.meaning}</i>
+            </div>
+            <div>
+              <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Sentences</b>
+              {singleWord?.sentences?.map((sent, index) => {
+                return (
+                  <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: theme.palette.text.secondary, lineHeight: '1.5', wordBreak: 'break-word' }}>
+                    <span style={{ color: theme.palette.primary.main, fontWeight: 'bold', marginRight: '5px' }}>{index + 1}.</span> <i>{sent}</i>
+                  </p>
+                )
+              })}
+            </div>
+          </div>
+          <div className="buttonDiv" style={{ position: 'relative', marginTop: 'auto', paddingTop: '15px', borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
+              <RiDeleteBinLine
+                onClick={handleDeleteClick}
+                style={{
+                  fontSize: "1.4rem",
+                  cursor: "pointer",
+                  color: '#d32f2f',
+                  transition: 'transform 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              />
+              <FiEdit
+                onClick={(e) => { e.stopPropagation(); handleUpdate(singleWord?._id); }}
+                style={{ 
+                  fontSize: "1.4rem", 
+                  cursor: "pointer", 
+                  color: theme.palette.primary.main,
+                  transition: 'transform 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              />
+          </div>
+        </div>
+      </ReactCardFlip>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+        onClick={(e) => e.stopPropagation()} // Prevent card flip when clicking on dialog
+        PaperProps={{
+          style: {
+            borderRadius: '16px',
+            padding: '8px',
+            backgroundColor: theme.palette.background.paper
+          }
         }}
       >
-        {/* Subtle decorative circle */}
-        <div style={{
-          position: 'absolute',
-          top: '-20%',
-          right: '-10%',
-          width: '60%',
-          height: '60%',
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.1)',
-          zIndex: 1
-        }} />
-        
-        <div style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '12px', alignItems: 'center', zIndex: 10 }}>
-            <HiOutlineSpeakerWave 
-              onClick={handleSpeak}
-              style={{ fontSize: '1.6rem', cursor: 'pointer', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
-            />
-            <span 
-              onClick={toggleStatus}
-              style={{ 
-                fontSize: '0.75rem', 
-                fontWeight: 'bold',
-                padding: '5px 12px', 
-                borderRadius: '20px', 
-                backgroundColor: singleWord.status === 'Known' 
-                    ? (isDark ? 'rgba(76, 175, 80, 0.9)' : '#4caf50') 
-                    : (isDark ? 'rgba(255, 152, 0, 0.9)' : '#ff9800'),
-                color: 'white',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}
-            >
-              {singleWord.status || 'To Learn'}
-            </span>
-        </div>
-        <h4 style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)', margin: 0, zIndex: 2, position: 'relative' }}>{singleWord?.word}</h4>
-      </div>
-
-      <div className="card__" onClick={handleClick2} style={{ 
-        position: 'relative', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        backgroundColor: theme.palette.background.paper,
-        color: theme.palette.text.primary,
-        borderColor: theme.palette.divider
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', zIndex: 10 }}>
-            <HiOutlineSpeakerWave 
-              onClick={handleSpeak}
-              style={{ fontSize: '1.6rem', cursor: 'pointer', color: theme.palette.primary.main }}
-            />
-            <span 
-              onClick={toggleStatus}
-              style={{ 
-                fontSize: '0.75rem', 
-                fontWeight: 'bold',
-                padding: '5px 12px', 
-                borderRadius: '20px', 
-                backgroundColor: singleWord.status === 'Known' 
-                    ? (isDark ? 'rgba(76, 175, 80, 0.2)' : '#e8f5e9') 
-                    : (isDark ? 'rgba(255, 152, 0, 0.2)' : '#fff3e0'),
-                color: singleWord.status === 'Known' 
-                    ? (isDark ? '#81c784' : '#2e7d32') 
-                    : (isDark ? '#ffb74d' : '#ef6c00'),
-                border: `1px solid ${singleWord.status === 'Known' ? '#4caf50' : '#ff9800'}`,
-                cursor: 'pointer',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}
-            >
-              {singleWord.status || 'To Learn'}
-            </span>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px', minHeight: 0 }}>
-          <div style={{ marginBottom: '15px' }}>
-            <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Meaning</b> 
-            <i style={{ fontSize: '1.1rem', color: theme.palette.text.primary, wordBreak: 'break-word' }}>{singleWord?.meaning}</i>
-          </div>
-          <div>
-            <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Sentences</b>
-            {singleWord?.sentences?.map((sent, index) => {
-              return (
-                <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: theme.palette.text.secondary, lineHeight: '1.5', wordBreak: 'break-word' }}>
-                  <span style={{ color: theme.palette.primary.main, fontWeight: 'bold', marginRight: '5px' }}>{index + 1}.</span> <i>{sent}</i>
-                </p>
-              )
-            })}
-          </div>
-        </div>
-        <div className="buttonDiv" style={{ position: 'relative', marginTop: 'auto', paddingTop: '15px', borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
-            <RiDeleteBinLine
-              onClick={(e) => { e.stopPropagation(); handleDelete(singleWord?._id); }}
-              style={{
-                fontSize: "1.4rem",
-                cursor: "pointer",
-                color: '#d32f2f',
-                transition: 'transform 0.2s',
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            />
-            <FiEdit
-              onClick={(e) => { e.stopPropagation(); handleUpdate(singleWord?._id); }}
-              style={{ 
-                fontSize: "1.4rem", 
-                cursor: "pointer", 
-                color: theme.palette.primary.main,
-                transition: 'transform 0.2s',
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            />
-        </div>
-      </div>
-    </ReactCardFlip>
+        <DialogTitle id="delete-dialog-title" sx={{ fontWeight: 800, pb: 1 }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ pb: 2 }}>
+          <DialogContentText id="delete-dialog-description" sx={{ color: theme.palette.text.primary }}>
+            Are you sure you want to delete the word <strong>"{singleWord?.word}"</strong>? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button 
+            onClick={handleCloseDeleteDialog} 
+            sx={{ 
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+              textTransform: 'none',
+              '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => handleConfirmDelete(singleWord?._id)} 
+            variant="contained" 
+            color="error"
+            autoFocus
+            sx={{ 
+              borderRadius: '8px',
+              fontWeight: 700,
+              textTransform: 'none',
+              px: 3,
+              boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)'
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
