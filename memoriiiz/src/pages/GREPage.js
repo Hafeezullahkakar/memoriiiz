@@ -8,7 +8,8 @@ import {
   Box, 
   ToggleButton, 
   ToggleButtonGroup,
-  useTheme
+  useTheme,
+  Pagination
 } from "@mui/material";
 import FlipCard from "../components/flipcard/FlipCard";
 
@@ -16,6 +17,8 @@ const GREPage = () => {
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("To Learn");
+  const [page, setPage] = useState(1);
+  const wordsPerPage = 20;
   const theme = useTheme();
 
   useEffect(() => {
@@ -37,10 +40,20 @@ const GREPage = () => {
   const handleFilterChange = (event, newFilter) => {
     if (newFilter !== null) {
       setFilter(newFilter);
+      setPage(1); // Reset to first page on filter change
     }
   };
 
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const filteredWords = words.filter(word => word.status === filter || (!word.status && filter === "To Learn"));
+  
+  const indexOfLastWord = page * wordsPerPage;
+  const indexOfFirstWord = indexOfLastWord - wordsPerPage;
+  const currentWords = filteredWords.slice(indexOfFirstWord, indexOfLastWord);
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 6 }}>
@@ -105,13 +118,31 @@ const GREPage = () => {
               ))}
             </div>
           ) : (
-            filteredWords?.map((word) => (
+            currentWords?.map((word) => (
               <div key={word._id} className="cardWrapper">
                 <FlipCard singleWord={word} setWords={setWords} />
               </div>
             ))
           )}
         </div>
+
+        {filteredWords.length > wordsPerPage && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+            <Pagination 
+              count={Math.ceil(filteredWords.length / wordsPerPage)} 
+              page={page} 
+              onChange={handlePageChange} 
+              color="primary" 
+              size="large"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  fontWeight: 700,
+                  bgcolor: 'background.paper',
+                }
+              }}
+            />
+          </Box>
+        )}
 
         {filteredWords.length === 0 && !loading && (
           <Box textAlign="center" mt={8}>

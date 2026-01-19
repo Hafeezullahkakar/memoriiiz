@@ -5,7 +5,8 @@ import {
   Container, 
   Typography, 
   Box, 
-  useTheme 
+  useTheme,
+  Pagination 
 } from "@mui/material";
 import Skeleton from "@mui/material/Skeleton";
 import FlipCard from "../components/flipcard/FlipCard";
@@ -13,6 +14,8 @@ import FlipCard from "../components/flipcard/FlipCard";
 const ViewAllWords = () => {
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const wordsPerPage = 20;
   const theme = useTheme();
 
   useEffect(() => {
@@ -30,6 +33,15 @@ const ViewAllWords = () => {
 
     fetchWords();
   }, []);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const indexOfLastWord = page * wordsPerPage;
+  const indexOfFirstWord = indexOfLastWord - wordsPerPage;
+  const currentWords = words.slice(indexOfFirstWord, indexOfLastWord);
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 6 }}>
@@ -61,13 +73,30 @@ const ViewAllWords = () => {
               ))}
             </div>
           ) : (
-            words?.map((word) => (
+            currentWords?.map((word) => (
               <div key={word._id} className="cardWrapper">
                 <FlipCard singleWord={word} setWords={setWords} />
               </div>
             ))
           )}
         </div>
+
+        {words.length > wordsPerPage && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+            <Pagination 
+              count={Math.ceil(words.length / wordsPerPage)} 
+              page={page} 
+              onChange={handlePageChange} 
+              color="primary" 
+              size="large"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  fontWeight: 700,
+                }
+              }}
+            />
+          </Box>
+        )}
 
         {words.length === 0 && !loading && (
           <Box textAlign="center" mt={8}>
