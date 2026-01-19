@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { MdPsychology, MdRefresh, MdCheckCircle, MdCancel } from "react-icons/md";
 import { toast } from "react-toastify";
+import confetti from 'canvas-confetti';
 
 const GREPlay = () => {
   const theme = useTheme();
@@ -33,6 +34,31 @@ const GREPlay = () => {
   useEffect(() => {
     fetchWords();
   }, []);
+
+  useEffect(() => {
+    if (score === 5) {
+      const duration = 5 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+      const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        // since particles fall down, start a bit higher than random
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+      }, 250);
+
+      return () => clearInterval(interval);
+    }
+  }, [score]);
 
   const fetchWords = async () => {
     setLoading(true);
@@ -89,7 +115,10 @@ const GREPlay = () => {
 
   const handleWordSelect = (word) => {
     if (matches[word._id]) return;
+    
+    // Play subtle click sound or just highlight
     setSelectedWord(word);
+    
     if (selectedMeaning) {
       checkMatch(word, selectedMeaning);
     }
@@ -98,7 +127,9 @@ const GREPlay = () => {
   const handleMeaningSelect = (meaning) => {
     // meaning is the word object but we display the meaning
     if (Object.values(matches).some(m => m._id === meaning._id)) return;
+    
     setSelectedMeaning(meaning);
+    
     if (selectedWord) {
       checkMatch(selectedWord, meaning);
     }
@@ -108,11 +139,18 @@ const GREPlay = () => {
     if (word._id === meaning._id) {
       setMatches(prev => ({ ...prev, [word._id]: meaning }));
       setScore(prev => prev + 1);
-      toast.success("Correct!");
+      
+      // Celebration animation
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.7 },
+        colors: [theme.palette.success.main, theme.palette.primary.main, '#FFD700']
+      });
+
     } else {
       setWrongMatches({ [word._id]: true, [meaning._id]: true });
-      setTimeout(() => setWrongMatches({}), 1000);
-      toast.error("Try again!");
+      setTimeout(() => setWrongMatches({}), 600);
     }
     setSelectedWord(null);
     setSelectedMeaning(null);
@@ -148,29 +186,52 @@ const GREPlay = () => {
   if (!currentQuiz && !loading) {
     return (
       <Container maxWidth="md" sx={{ py: 12, textAlign: 'center' }}>
-        <MdPsychology size={80} color={theme.palette.divider} />
-        <Typography variant="h4" sx={{ mt: 4, fontWeight: 700 }}>
-          Not enough words
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 4 }}>
-          You need at least 5 words marked as '{quizType}' to start the quiz.
-        </Typography>
-        
-        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-          <ToggleButtonGroup
-            value={quizType}
-            exclusive
-            onChange={handleQuizTypeChange}
-            sx={{ bgcolor: 'background.paper' }}
-          >
-            <ToggleButton value="To Learn">Practice "To Learn"</ToggleButton>
-            <ToggleButton value="Known">Practice "Known"</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-
-        <Button variant="contained" href="/gre" size="large">
-          Go to GRE Prep
-        </Button>
+        <Paper elevation={0} sx={{ p: 6, borderRadius: '24px', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+          <MdPsychology size={80} color={theme.palette.divider} />
+          <Typography variant="h4" sx={{ mt: 4, fontWeight: 700 }}>
+            Not enough words
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 4 }}>
+            You need at least 5 words marked as '{quizType}' to start the quiz.
+          </Typography>
+          
+          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+            <ToggleButtonGroup
+              value={quizType}
+              exclusive
+              onChange={handleQuizTypeChange}
+              sx={{ 
+                bgcolor: 'background.default',
+                borderRadius: '12px',
+                p: 0.5,
+                border: '1px solid',
+                borderColor: 'divider',
+                '& .MuiToggleButton-root': {
+                  px: 3,
+                  py: 1,
+                  fontWeight: 700,
+                  border: 'none !important',
+                  borderRadius: '10px !important',
+                  mx: 0.5,
+                  '&.Mui-selected': {
+                    bgcolor: quizType === 'Known' ? 'success.main' : 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      bgcolor: quizType === 'Known' ? 'success.dark' : 'primary.dark',
+                    }
+                  }
+                }
+              }}
+            >
+              <ToggleButton value="To Learn">Practice "To Learn"</ToggleButton>
+              <ToggleButton value="Known">Practice "Known"</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+  
+          <Button variant="contained" href="/gre" size="large" sx={{ borderRadius: '12px', px: 4, py: 1.5, fontWeight: 700, textTransform: 'none' }}>
+            Go to GRE Prep
+          </Button>
+        </Paper>
       </Container>
     );
   }
@@ -197,12 +258,22 @@ const GREPlay = () => {
               size="small"
               sx={{ 
                 bgcolor: 'background.paper',
+                borderRadius: '12px',
+                p: 0.5,
+                border: '1px solid',
+                borderColor: 'divider',
                 '& .MuiToggleButton-root': {
                   px: 3,
-                  fontWeight: 600,
+                  py: 1,
+                  fontWeight: 700,
+                  border: 'none !important',
+                  borderRadius: '10px !important',
+                  mx: 0.5,
+                  transition: 'all 0.2s',
                   '&.Mui-selected': {
                     bgcolor: quizType === 'Known' ? 'success.main' : 'primary.main',
                     color: 'white',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                     '&:hover': {
                       bgcolor: quizType === 'Known' ? 'success.dark' : 'primary.dark',
                     }
@@ -219,13 +290,29 @@ const GREPlay = () => {
                 label={`Score: ${score}/5`} 
                 color="primary" 
                 variant="outlined" 
-                sx={{ fontWeight: 700, px: 2, py: 2.5, fontSize: '1rem' }} 
+                sx={{ 
+                  fontWeight: 700, 
+                  px: 2, 
+                  py: 2.5, 
+                  fontSize: '1rem',
+                  borderRadius: '12px',
+                  borderWidth: '2px',
+                  bgcolor: 'background.paper'
+                }} 
               />
               <Button 
                 startIcon={<MdRefresh />} 
                 variant="contained" 
                 onClick={handleReset}
-                sx={{ borderRadius: 2 }}
+                sx={{ 
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  px: 3,
+                  py: 1,
+                  boxShadow: '0 4px 12px rgba(0, 118, 255, 0.2)',
+                  textTransform: 'none',
+                  fontSize: '1rem'
+                }}
               >
                 New Quiz
               </Button>
@@ -244,18 +331,22 @@ const GREPlay = () => {
                 <Card 
                   key={w._id}
                   onClick={() => handleWordSelect(w)}
-                  sx={{ 
-                    cursor: matches[w._id] ? 'default' : 'pointer',
-                    bgcolor: matches[w._id] ? 'success.light' : (selectedWord?._id === w._id ? 'primary.light' : 'background.paper'),
-                    color: (matches[w._id] || selectedWord?._id === w._id) ? 'white' : 'text.primary',
-                    border: '2px solid',
-                    borderColor: wrongMatches[w._id] ? 'error.main' : (matches[w._id] ? 'success.main' : (selectedWord?._id === w._id ? 'primary.main' : 'divider')),
-                    transition: 'all 0.2s',
-                    '&:hover': {
-                      transform: matches[w._id] ? 'none' : 'translateX(5px)',
-                      borderColor: matches[w._id] ? 'success.main' : 'primary.main'
-                    }
-                  }}
+                  className={wrongMatches[w._id] ? "shake-animation" : ""}
+                sx={{ 
+                  cursor: matches[w._id] ? 'default' : 'pointer',
+                  bgcolor: matches[w._id] ? 'success.light' : (selectedWord?._id === w._id ? 'primary.light' : 'background.paper'),
+                  color: (matches[w._id] || selectedWord?._id === w._id) ? 'white' : 'text.primary',
+                  border: '2px solid',
+                  borderRadius: '16px',
+                  borderColor: wrongMatches[w._id] ? 'error.main' : (matches[w._id] ? 'success.main' : (selectedWord?._id === w._id ? 'primary.main' : 'divider')),
+                  boxShadow: selectedWord?._id === w._id ? '0 8px 16px rgba(0,0,0,0.1)' : '0 4px 6px rgba(0,0,0,0.05)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: matches[w._id] ? 'none' : 'translateY(-3px)',
+                    borderColor: matches[w._id] ? 'success.main' : 'primary.main',
+                    boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
+                  }
+                }}
                 >
                   <CardContent sx={{ py: '16px !important', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>{w.word}</Typography>
@@ -283,16 +374,20 @@ const GREPlay = () => {
                   <Card 
                     key={m._id}
                     onClick={() => handleMeaningSelect(m)}
+                    className={wrongMatches[m._id] ? "shake-animation" : ""}
                     sx={{ 
                       cursor: isMatched ? 'default' : 'pointer',
                       bgcolor: isMatched ? 'success.light' : (selectedMeaning?._id === m._id ? 'primary.light' : 'background.paper'),
                       color: (isMatched || selectedMeaning?._id === m._id) ? 'white' : 'text.primary',
                       border: '2px solid',
+                      borderRadius: '16px',
                       borderColor: (wrongMatches[m._id] && selectedMeaning?._id === m._id) ? 'error.main' : (isMatched ? 'success.main' : (selectedMeaning?._id === m._id ? 'primary.main' : 'divider')),
-                      transition: 'all 0.2s',
+                      boxShadow: selectedMeaning?._id === m._id ? '0 8px 16px rgba(0,0,0,0.1)' : '0 4px 6px rgba(0,0,0,0.05)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        transform: isMatched ? 'none' : 'translateX(-5px)',
-                        borderColor: isMatched ? 'success.main' : 'primary.main'
+                        transform: isMatched ? 'none' : 'translateY(-3px)',
+                        borderColor: isMatched ? 'success.main' : 'primary.main',
+                        boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
                       }
                     }}
                   >
@@ -309,14 +404,28 @@ const GREPlay = () => {
 
         {score === 5 && (
           <Box sx={{ mt: 8, textAlign: 'center' }}>
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: 'success.lighter', border: '2px dashed', borderColor: 'success.main' }}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: '24px', bgcolor: 'success.lighter', border: '2px dashed', borderColor: 'success.main', boxShadow: '0 10px 40px rgba(76, 175, 80, 0.1)' }}>
               <Typography variant="h4" color="success.main" sx={{ fontWeight: 800, mb: 2 }}>
                 Great job! 🎉
               </Typography>
-              <Typography variant="body1" sx={{ mb: 3 }}>
+              <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>
                 You have correctly matched all the words. Keep it up to master your GRE vocabulary.
               </Typography>
-              <Button size="large" variant="contained" color="success" onClick={handleReset}>
+              <Button 
+                size="large" 
+                variant="contained" 
+                color="success" 
+                onClick={handleReset}
+                sx={{ 
+                  borderRadius: '12px', 
+                  px: 5, 
+                  py: 1.5, 
+                  fontWeight: 700,
+                  boxShadow: '0 8px 20px rgba(76, 175, 80, 0.3)',
+                  textTransform: 'none',
+                  fontSize: '1.1rem'
+                }}
+              >
                 Play Again
               </Button>
             </Paper>
