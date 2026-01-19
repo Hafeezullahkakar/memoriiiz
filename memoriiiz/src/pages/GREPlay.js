@@ -30,10 +30,19 @@ const GREPlay = () => {
   const [wrongMatches, setWrongMatches] = useState({});
   const [score, setScore] = useState(0);
   const [quizType, setQuizType] = useState("To Learn");
+  const [category, setCategory] = useState("GRE"); // "GRE" or "General"
+
+  // MCQ State
+  const [mcqQuiz, setMcqQuiz] = useState(null);
+  const [currentMcqIndex, setCurrentMcqIndex] = useState(0);
+  const [selectedMcqOption, setSelectedMcqOption] = useState(null);
+  const [mcqResult, setMcqResult] = useState(null); // 'correct' | 'wrong'
+  const [mcqScore, setMcqScore] = useState(0);
+  const [mcqFinished, setMcqFinished] = useState(false);
 
   useEffect(() => {
     fetchWords();
-  }, []);
+  }, [category]);
 
   useEffect(() => {
     if (score === 5) {
@@ -63,8 +72,9 @@ const GREPlay = () => {
   const fetchWords = async () => {
     setLoading(true);
     try {
+      const endpoint = category === "GRE" ? "getWordsByType/GRE" : "getAllWords";
       const response = await axios.get(
-        `${process.env.REACT_APP_URI || 'https://memoriiiz.vercel.app/api'}/getWordsByType/GRE`
+        `${process.env.REACT_APP_URI || 'https://memoriiiz.vercel.app/api'}/${endpoint}`
       );
       setWords(response?.data || []);
       const filtered = (response?.data || []).filter(w => 
@@ -72,12 +82,23 @@ const GREPlay = () => {
       );
       if (filtered.length >= 5) {
         generateQuiz(filtered);
+        generateMcqQuiz(filtered);
+      } else {
+        setCurrentQuiz(null);
+        setMcqQuiz(null);
       }
       setLoading(false);
     } catch (error) {
       console.error("Error fetching words:", error);
       toast.error("Error loading words");
       setLoading(false);
+    }
+  };
+
+  const handleCategoryChange = (event, newCategory) => {
+    if (newCategory !== null && newCategory !== category) {
+      setCategory(newCategory);
+      // fetchWords will be triggered by useEffect
     }
   };
 
@@ -99,6 +120,35 @@ const GREPlay = () => {
     setScore(0);
   };
 
+  const generateMcqQuiz = (availableWords) => {
+    const shuffled = [...availableWords].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 5);
+
+    const quiz = selected.map((word) => {
+      // Pick 3 random wrong meanings
+      const otherMeanings = availableWords
+        .filter((w) => w._id !== word._id)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3)
+        .map((w) => w.meaning);
+      
+      const options = [...otherMeanings, word.meaning].sort(() => 0.5 - Math.random());
+      
+      return {
+        word: word,
+        options: options,
+        correctMeaning: word.meaning
+      };
+    });
+
+    setMcqQuiz(quiz);
+    setCurrentMcqIndex(0);
+    setSelectedMcqOption(null);
+    setMcqResult(null);
+    setMcqScore(0);
+    setMcqFinished(false);
+  };
+
   const handleQuizTypeChange = (event, newType) => {
     if (newType !== null && newType !== quizType) {
       setQuizType(newType);
@@ -107,10 +157,42 @@ const GREPlay = () => {
       );
       if (filtered.length >= 5) {
         generateQuiz(filtered);
+        generateMcqQuiz(filtered);
       } else {
         setCurrentQuiz(null);
+        setMcqQuiz(null);
       }
     }
+  };
+
+  const handleMcqOptionSelect = (option) => {
+    if (mcqResult) return;
+
+    setSelectedMcqOption(option);
+    const isCorrect = option === mcqQuiz[currentMcqIndex].correctMeaning;
+
+    if (isCorrect) {
+      setMcqResult('correct');
+      setMcqScore(prev => prev + 1);
+      confetti({
+        particleCount: 40,
+        spread: 40,
+        origin: { y: 0.8 },
+        colors: [theme.palette.success.main, theme.palette.primary.main]
+      });
+    } else {
+      setMcqResult('wrong');
+    }
+
+    setTimeout(() => {
+      if (currentMcqIndex < 4) {
+        setCurrentMcqIndex(prev => prev + 1);
+        setSelectedMcqOption(null);
+        setMcqResult(null);
+      } else {
+        setMcqFinished(true);
+      }
+    }, 1200);
   };
 
   const handleWordSelect = (word) => {
@@ -162,6 +244,7 @@ const GREPlay = () => {
     );
     if (filtered.length >= 5) {
       generateQuiz(filtered);
+      generateMcqQuiz(filtered);
     } else {
       fetchWords();
     }
@@ -192,44 +275,77 @@ const GREPlay = () => {
             Not enough words
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 4 }}>
-            You need at least 5 words marked as '{quizType}' to start the quiz.
+            You need at least 5 words in '{category}' marked as '{quizType}' to start the quiz.
           </Typography>
           
-          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-            <ToggleButtonGroup
-              value={quizType}
-              exclusive
-              onChange={handleQuizTypeChange}
-              sx={{ 
-                bgcolor: 'background.default',
-                borderRadius: '12px',
-                p: 0.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                '& .MuiToggleButton-root': {
-                  px: 3,
-                  py: 1,
-                  fontWeight: 700,
-                  border: 'none !important',
-                  borderRadius: '10px !important',
-                  mx: 0.5,
-                  '&.Mui-selected': {
-                    bgcolor: quizType === 'Known' ? 'success.main' : 'primary.main',
-                    color: 'white',
-                    '&:hover': {
-                      bgcolor: quizType === 'Known' ? 'success.dark' : 'primary.dark',
+          <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <ToggleButtonGroup
+                value={category}
+                exclusive
+                onChange={handleCategoryChange}
+                sx={{ 
+                  bgcolor: 'background.default',
+                  borderRadius: '12px',
+                  p: 0.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '& .MuiToggleButton-root': {
+                    px: 3,
+                    py: 1,
+                    fontWeight: 700,
+                    border: 'none !important',
+                    borderRadius: '10px !important',
+                    mx: 0.5,
+                    '&.Mui-selected': {
+                      bgcolor: 'secondary.main',
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: 'secondary.dark',
+                      }
                     }
                   }
-                }
-              }}
-            >
-              <ToggleButton value="To Learn">Practice "To Learn"</ToggleButton>
-              <ToggleButton value="Known">Practice "Known"</ToggleButton>
-            </ToggleButtonGroup>
+                }}
+              >
+                <ToggleButton value="GRE">GRE Prep</ToggleButton>
+                <ToggleButton value="General">General Vocab</ToggleButton>
+              </ToggleButtonGroup>
+
+              <ToggleButtonGroup
+                value={quizType}
+                exclusive
+                onChange={handleQuizTypeChange}
+                sx={{ 
+                  bgcolor: 'background.default',
+                  borderRadius: '12px',
+                  p: 0.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '& .MuiToggleButton-root': {
+                    px: 3,
+                    py: 1,
+                    fontWeight: 700,
+                    border: 'none !important',
+                    borderRadius: '10px !important',
+                    mx: 0.5,
+                    '&.Mui-selected': {
+                      bgcolor: quizType === 'Known' ? 'success.main' : 'primary.main',
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: quizType === 'Known' ? 'success.dark' : 'primary.dark',
+                      }
+                    }
+                  }
+                }}
+              >
+                <ToggleButton value="To Learn">To Learn</ToggleButton>
+                <ToggleButton value="Known">Known</ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
           </Box>
   
-          <Button variant="contained" href="/gre" size="large" sx={{ borderRadius: '12px', px: 4, py: 1.5, fontWeight: 700, textTransform: 'none' }}>
-            Go to GRE Prep
+          <Button variant="contained" href={category === "GRE" ? "/gre" : "/wordslist"} size="large" sx={{ borderRadius: '12px', px: 4, py: 1.5, fontWeight: 700, textTransform: 'none' }}>
+            Go to {category === "GRE" ? "GRE Prep" : "General Vocabulary"}
           </Button>
         </Paper>
       </Container>
@@ -244,46 +360,82 @@ const GREPlay = () => {
             Challenge your memory
           </Typography>
           <Typography variant="h3" sx={{ fontWeight: 800, mt: 1, mb: 2, color: 'text.primary' }}>
-            GRE Play: Matching Quiz
+            {category === "GRE" ? "GRE Play: Matching Quiz" : "Vocabulary Play: Matching Quiz"}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            Match the GRE words with their correct meanings.
+            Match the {category === "GRE" ? "GRE" : "vocabulary"} words with their correct meanings.
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-            <ToggleButtonGroup
-              value={quizType}
-              exclusive
-              onChange={handleQuizTypeChange}
-              size="small"
-              sx={{ 
-                bgcolor: 'background.paper',
-                borderRadius: '12px',
-                p: 0.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                '& .MuiToggleButton-root': {
-                  px: 3,
-                  py: 1,
-                  fontWeight: 700,
-                  border: 'none !important',
-                  borderRadius: '10px !important',
-                  mx: 0.5,
-                  transition: 'all 0.2s',
-                  '&.Mui-selected': {
-                    bgcolor: quizType === 'Known' ? 'success.main' : 'primary.main',
-                    color: 'white',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    '&:hover': {
-                      bgcolor: quizType === 'Known' ? 'success.dark' : 'primary.dark',
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <ToggleButtonGroup
+                value={category}
+                exclusive
+                onChange={handleCategoryChange}
+                size="small"
+                sx={{ 
+                  bgcolor: 'background.paper',
+                  borderRadius: '12px',
+                  p: 0.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '& .MuiToggleButton-root': {
+                    px: 3,
+                    py: 1,
+                    fontWeight: 700,
+                    border: 'none !important',
+                    borderRadius: '10px !important',
+                    mx: 0.5,
+                    transition: 'all 0.2s',
+                    '&.Mui-selected': {
+                      bgcolor: 'secondary.main',
+                      color: 'white',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      '&:hover': {
+                        bgcolor: 'secondary.dark',
+                      }
                     }
                   }
-                }
-              }}
-            >
-              <ToggleButton value="To Learn">To Learn</ToggleButton>
-              <ToggleButton value="Known">Known</ToggleButton>
-            </ToggleButtonGroup>
+                }}
+              >
+                <ToggleButton value="GRE">GRE Prep</ToggleButton>
+                <ToggleButton value="General">General Vocab</ToggleButton>
+              </ToggleButtonGroup>
+
+              <ToggleButtonGroup
+                value={quizType}
+                exclusive
+                onChange={handleQuizTypeChange}
+                size="small"
+                sx={{ 
+                  bgcolor: 'background.paper',
+                  borderRadius: '12px',
+                  p: 0.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '& .MuiToggleButton-root': {
+                    px: 3,
+                    py: 1,
+                    fontWeight: 700,
+                    border: 'none !important',
+                    borderRadius: '10px !important',
+                    mx: 0.5,
+                    transition: 'all 0.2s',
+                    '&.Mui-selected': {
+                      bgcolor: quizType === 'Known' ? 'success.main' : 'primary.main',
+                      color: 'white',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      '&:hover': {
+                        bgcolor: quizType === 'Known' ? 'success.dark' : 'primary.dark',
+                      }
+                    }
+                  }
+                }}
+              >
+                <ToggleButton value="To Learn">To Learn</ToggleButton>
+                <ToggleButton value="Known">Known</ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, alignItems: 'center' }}>
               <Chip 
@@ -431,6 +583,160 @@ const GREPlay = () => {
             </Paper>
           </Box>
         )}
+
+        {/* MCQ Quiz Section */}
+        <Box sx={{ mt: 12, pt: 8, borderTop: '2px solid', borderColor: 'divider' }}>
+          <Box textAlign="center" mb={6}>
+            <Typography variant="overline" sx={{ color: 'secondary.main', fontWeight: 700, letterSpacing: 2 }}>
+              Multiple Choice Challenge
+            </Typography>
+            <Typography variant="h3" sx={{ fontWeight: 800, mt: 1, mb: 2, color: 'text.primary' }}>
+              {category === "GRE" ? "GRE MCQ: Master Definitions" : "Vocabulary MCQ: Master Definitions"}
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Pick the correct meaning for the displayed word.
+            </Typography>
+          </Box>
+
+          {mcqQuiz && !mcqFinished ? (
+            <Container maxWidth="md">
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Chip 
+                  label={`Question: ${currentMcqIndex + 1}/5`} 
+                  variant="outlined"
+                  sx={{ fontWeight: 700, borderRadius: '8px', border: '2px solid', borderColor: 'divider' }}
+                />
+                <Chip 
+                  label={`MCQ Score: ${mcqScore}`} 
+                  color="secondary"
+                  sx={{ fontWeight: 700, borderRadius: '8px' }}
+                />
+              </Box>
+
+              <Card sx={{ 
+                borderRadius: '24px', 
+                p: 4, 
+                mb: 4, 
+                textAlign: 'center',
+                background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: 'none'
+              }}>
+                <Typography variant="h2" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                  {mcqQuiz[currentMcqIndex].word.word}
+                </Typography>
+              </Card>
+
+              <Grid container spacing={2}>
+                {mcqQuiz[currentMcqIndex].options.map((option, index) => {
+                  const isSelected = selectedMcqOption === option;
+                  const isCorrect = option === mcqQuiz[currentMcqIndex].correctMeaning;
+                  
+                  let bgColor = 'background.paper';
+                  let borderColor = 'divider';
+                  let textColor = 'text.primary';
+
+                  if (mcqResult && isSelected) {
+                    if (isCorrect) {
+                      bgColor = 'success.light';
+                      borderColor = 'success.main';
+                      textColor = 'white';
+                    } else {
+                      bgColor = 'error.light';
+                      borderColor = 'error.main';
+                      textColor = 'white';
+                    }
+                  } else if (mcqResult && isCorrect) {
+                    bgColor = 'success.lighter';
+                    borderColor = 'success.main';
+                  }
+
+                  return (
+                    <Grid item xs={12} key={index}>
+                      <Card 
+                        onClick={() => handleMcqOptionSelect(option)}
+                        sx={{ 
+                          cursor: mcqResult ? 'default' : 'pointer',
+                          bgcolor: bgColor,
+                          color: textColor,
+                          border: '2px solid',
+                          borderColor: borderColor,
+                          borderRadius: '16px',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          '&:hover': {
+                            transform: mcqResult ? 'none' : 'translateX(8px)',
+                            borderColor: mcqResult ? borderColor : 'primary.main',
+                          },
+                          position: 'relative',
+                          overflow: 'visible'
+                        }}
+                      >
+                        <CardContent sx={{ py: '20px !important', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Box sx={{ 
+                            width: 32, 
+                            height: 32, 
+                            borderRadius: '50%', 
+                            border: '2px solid', 
+                            borderColor: isSelected ? 'inherit' : 'divider',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 800,
+                            flexShrink: 0
+                          }}>
+                            {String.fromCharCode(65 + index)}
+                          </Box>
+                          <Typography variant="body1" sx={{ fontWeight: 600, flexGrow: 1 }}>
+                            {option}
+                          </Typography>
+                          {mcqResult && isCorrect && <MdCheckCircle size={24} color={isSelected ? "white" : theme.palette.success.main} />}
+                          {mcqResult && isSelected && !isCorrect && <MdCancel size={24} color="white" />}
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </Container>
+          ) : mcqFinished ? (
+            <Box sx={{ mt: 4, textAlign: 'center' }}>
+              <Paper elevation={0} sx={{ 
+                p: 6, 
+                borderRadius: '24px', 
+                bgcolor: mcqScore >= 4 ? 'success.lighter' : 'background.paper', 
+                border: '2px dashed', 
+                borderColor: mcqScore >= 4 ? 'success.main' : 'divider',
+              }}>
+                <Typography variant="h4" color={mcqScore >= 4 ? "success.main" : "text.primary"} sx={{ fontWeight: 800, mb: 2 }}>
+                  {mcqScore >= 4 ? "Excellent Work! 🏆" : "Keep Practicing! 📚"}
+                </Typography>
+                <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+                  Your MCQ Score: {mcqScore}/5
+                </Typography>
+                <Button 
+                  size="large" 
+                  variant="contained" 
+                  color="secondary" 
+                  onClick={() => generateMcqQuiz(words.filter(w => quizType === "Known" ? w.status === "Known" : (w.status === "To Learn" || !w.status)))}
+                  sx={{ 
+                    borderRadius: '12px', 
+                    px: 5, 
+                    py: 1.5, 
+                    fontWeight: 700,
+                    textTransform: 'none',
+                  }}
+                >
+                  Restart MCQ
+                </Button>
+              </Paper>
+            </Box>
+          ) : (
+             <Box textAlign="center" py={4}>
+               <Typography color="text.secondary">Loading quiz or not enough words...</Typography>
+             </Box>
+          )}
+        </Box>
       </Container>
     </Box>
   );
