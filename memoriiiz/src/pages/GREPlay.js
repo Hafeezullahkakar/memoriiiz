@@ -12,6 +12,8 @@ import {
   Card,
   CardContent,
   Chip,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import { MdPsychology, MdRefresh, MdCheckCircle, MdCancel } from "react-icons/md";
 import { toast } from "react-toastify";
@@ -26,6 +28,7 @@ const GREPlay = () => {
   const [matches, setMatches] = useState({});
   const [wrongMatches, setWrongMatches] = useState({});
   const [score, setScore] = useState(0);
+  const [quizType, setQuizType] = useState("To Learn");
 
   useEffect(() => {
     fetchWords();
@@ -37,10 +40,12 @@ const GREPlay = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_URI || 'https://memoriiiz.vercel.app/api'}/getWordsByType/GRE`
       );
-      const toLearnWords = response?.data.filter(w => w.status === "To Learn" || !w.status);
-      setWords(toLearnWords);
-      if (toLearnWords.length >= 5) {
-        generateQuiz(toLearnWords);
+      setWords(response?.data || []);
+      const filtered = (response?.data || []).filter(w => 
+        quizType === "Known" ? w.status === "Known" : (w.status === "To Learn" || !w.status)
+      );
+      if (filtered.length >= 5) {
+        generateQuiz(filtered);
       }
       setLoading(false);
     } catch (error) {
@@ -66,6 +71,20 @@ const GREPlay = () => {
     setSelectedWord(null);
     setSelectedMeaning(null);
     setScore(0);
+  };
+
+  const handleQuizTypeChange = (event, newType) => {
+    if (newType !== null && newType !== quizType) {
+      setQuizType(newType);
+      const filtered = words.filter(w => 
+        newType === "Known" ? w.status === "Known" : (w.status === "To Learn" || !w.status)
+      );
+      if (filtered.length >= 5) {
+        generateQuiz(filtered);
+      } else {
+        setCurrentQuiz(null);
+      }
+    }
   };
 
   const handleWordSelect = (word) => {
@@ -100,8 +119,11 @@ const GREPlay = () => {
   };
 
   const handleReset = () => {
-    if (words.length >= 5) {
-      generateQuiz(words);
+    const filtered = words.filter(w => 
+      quizType === "Known" ? w.status === "Known" : (w.status === "To Learn" || !w.status)
+    );
+    if (filtered.length >= 5) {
+      generateQuiz(filtered);
     } else {
       fetchWords();
     }
@@ -123,16 +145,29 @@ const GREPlay = () => {
     );
   }
 
-  if (words.length < 5) {
+  if (!currentQuiz && !loading) {
     return (
       <Container maxWidth="md" sx={{ py: 12, textAlign: 'center' }}>
         <MdPsychology size={80} color={theme.palette.divider} />
         <Typography variant="h4" sx={{ mt: 4, fontWeight: 700 }}>
-          Not enough 'To Learn' words
+          Not enough words
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 4 }}>
-          You need at least 5 words marked as 'To Learn' to start the quiz.
+          You need at least 5 words marked as '{quizType}' to start the quiz.
         </Typography>
+        
+        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+          <ToggleButtonGroup
+            value={quizType}
+            exclusive
+            onChange={handleQuizTypeChange}
+            sx={{ bgcolor: 'background.paper' }}
+          >
+            <ToggleButton value="To Learn">Practice "To Learn"</ToggleButton>
+            <ToggleButton value="Known">Practice "Known"</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
         <Button variant="contained" href="/gre" size="large">
           Go to GRE Prep
         </Button>
@@ -150,25 +185,51 @@ const GREPlay = () => {
           <Typography variant="h3" sx={{ fontWeight: 800, mt: 1, mb: 2, color: 'text.primary' }}>
             GRE Play: Matching Quiz
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
             Match the GRE words with their correct meanings.
           </Typography>
-          
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 4, alignItems: 'center' }}>
-            <Chip 
-              label={`Score: ${score}/5`} 
-              color="primary" 
-              variant="outlined" 
-              sx={{ fontWeight: 700, px: 2, py: 2.5, fontSize: '1rem' }} 
-            />
-            <Button 
-              startIcon={<MdRefresh />} 
-              variant="contained" 
-              onClick={handleReset}
-              sx={{ borderRadius: 2 }}
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            <ToggleButtonGroup
+              value={quizType}
+              exclusive
+              onChange={handleQuizTypeChange}
+              size="small"
+              sx={{ 
+                bgcolor: 'background.paper',
+                '& .MuiToggleButton-root': {
+                  px: 3,
+                  fontWeight: 600,
+                  '&.Mui-selected': {
+                    bgcolor: quizType === 'Known' ? 'success.main' : 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      bgcolor: quizType === 'Known' ? 'success.dark' : 'primary.dark',
+                    }
+                  }
+                }
+              }}
             >
-              New Quiz
-            </Button>
+              <ToggleButton value="To Learn">To Learn</ToggleButton>
+              <ToggleButton value="Known">Known</ToggleButton>
+            </ToggleButtonGroup>
+
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, alignItems: 'center' }}>
+              <Chip 
+                label={`Score: ${score}/5`} 
+                color="primary" 
+                variant="outlined" 
+                sx={{ fontWeight: 700, px: 2, py: 2.5, fontSize: '1rem' }} 
+              />
+              <Button 
+                startIcon={<MdRefresh />} 
+                variant="contained" 
+                onClick={handleReset}
+                sx={{ borderRadius: 2 }}
+              >
+                New Quiz
+              </Button>
+            </Box>
           </Box>
         </Box>
 

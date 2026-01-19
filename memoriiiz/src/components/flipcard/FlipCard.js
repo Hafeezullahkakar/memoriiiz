@@ -72,7 +72,19 @@ const FlipCard = ({ singleWord, setWords }) => {
     e.stopPropagation();
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(singleWord?.word);
+      
+      let textToSpeak = singleWord?.word || "";
+      
+      if (isFlipped2) {
+        if (singleWord?.meaning) {
+          textToSpeak += `. Meaning: ${singleWord.meaning}`;
+        }
+        if (singleWord?.sentences && singleWord.sentences.length > 0) {
+          textToSpeak += ". Examples: " + singleWord.sentences.join(". ");
+        }
+      }
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
       window.speechSynthesis.speak(utterance);
     } else {
       toast.error("Speech synthesis not supported in this browser");
@@ -186,16 +198,16 @@ const FlipCard = ({ singleWord, setWords }) => {
               {singleWord.status || 'To Learn'}
             </span>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px', minHeight: 0 }}>
           <div style={{ marginBottom: '15px' }}>
             <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Meaning</b> 
-            <i style={{ fontSize: '1.1rem', color: theme.palette.text.primary }}>{singleWord?.meaning}</i>
+            <i style={{ fontSize: '1.1rem', color: theme.palette.text.primary, wordBreak: 'break-word' }}>{singleWord?.meaning}</i>
           </div>
           <div>
             <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Sentences</b>
             {singleWord?.sentences?.map((sent, index) => {
               return (
-                <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: theme.palette.text.secondary, lineHeight: '1.5' }}>
+                <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: theme.palette.text.secondary, lineHeight: '1.5', wordBreak: 'break-word' }}>
                   <span style={{ color: theme.palette.primary.main, fontWeight: 'bold', marginRight: '5px' }}>{index + 1}.</span> <i>{sent}</i>
                 </p>
               )
