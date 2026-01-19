@@ -17,8 +17,13 @@ import {
   ListItem, 
   ListItemText, 
   ListItemSecondaryAction,
-  useTheme,
-  InputAdornment
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogContentText, 
+  DialogTitle, 
+  InputAdornment,
+  useTheme
 } from "@mui/material";
 import { MdAdd, MdDelete, MdSend, MdTranslate } from "react-icons/md";
 
@@ -35,6 +40,7 @@ const AddNewWord = () => {
   const [video, setVideo] = useState("");
   const [sentences, setSentences] = useState([]);
   const [sentence, setSentence] = useState("");
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
   useEffect(() => {
     if (state) {
@@ -57,8 +63,19 @@ const AddNewWord = () => {
     }
   }, [state]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!word || !meaning) {
+      toast.error("Word and Meaning are required!");
+      return;
+    }
+
+    setOpenConfirmDialog(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setOpenConfirmDialog(false);
 
     const newWord = {
       word,
@@ -67,11 +84,6 @@ const AddNewWord = () => {
       video,
       sentences,
     };
-
-    if (!word || !meaning) {
-      toast.error("Word and Meaning are required!");
-      return;
-    }
 
     try {
       const apiUrl = `https://memoriiiz.vercel.app/api/${state ? `updateWord/${state}` : 'addWord'}`;
@@ -239,6 +251,60 @@ const AddNewWord = () => {
           </form>
         </Paper>
       </Container>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={openConfirmDialog}
+        onClose={() => setOpenConfirmDialog(false)}
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-description"
+        PaperProps={{
+          style: {
+            borderRadius: '16px',
+            padding: '8px',
+            backgroundColor: theme.palette.background.paper
+          }
+        }}
+      >
+        <DialogTitle id="confirm-dialog-title" sx={{ fontWeight: 800, pb: 1 }}>
+          {state ? "Confirm Update" : "Confirm Addition"}
+        </DialogTitle>
+        <DialogContent sx={{ pb: 2 }}>
+          <DialogContentText id="confirm-dialog-description" sx={{ color: theme.palette.text.primary }}>
+            {state 
+              ? `Are you sure you want to update the word "${word}"?` 
+              : `Are you sure you want to add the word "${word}" to your vocabulary list?`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button 
+            onClick={() => setOpenConfirmDialog(false)} 
+            sx={{ 
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+              textTransform: 'none',
+              '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirmSubmit} 
+            variant="contained" 
+            color="primary"
+            autoFocus
+            sx={{ 
+              borderRadius: '8px',
+              fontWeight: 700,
+              textTransform: 'none',
+              px: 3,
+              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
+            }}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
