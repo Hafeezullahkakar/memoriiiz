@@ -4,16 +4,18 @@ const Word = require("../models/WordModel");
 const GEMINI_MODEL = "gemini-flash-latest";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-const callGemini = async ({ systemPrompt, contents }) => {
+const callGemini = async ({ systemPrompt, contents, generationConfig }) => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
+  const body = {
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents,
+  };
+  if (generationConfig) body.generationConfig = generationConfig;
   const response = await axios.post(
     `${GEMINI_ENDPOINT}?key=${apiKey}`,
-    {
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      contents,
-    },
-    { headers: { "Content-Type": "application/json" } }
+    body,
+    { headers: { "Content-Type": "application/json" }, timeout: 55000 }
   );
   const text = response?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error("Empty response from Gemini");
@@ -35,15 +37,11 @@ const toGeminiContents = (messages) =>
   }));
 
 const PARAGRAPH_SYSTEM_PROMPT =
-  "You are a GRE prep writer. Given a list of GRE vocabulary words, " +
-  "compose a single cohesive paragraph in an academic, GRE-reading-passage " +
-  "style. Requirements: (1) use EVERY given word at least once, in its " +
-  "natural grammatical form (inflections and tense changes are fine); " +
-  "(2) keep the paragraph coherent with a clear theme; (3) prefer complex " +
-  "but readable sentences; (4) do not use markdown, headings, or lists — " +
-  "output plain prose only; (5) do not label or list the words separately; " +
-  "(6) target roughly 30-50 words of prose per vocabulary word. Return " +
-  "ONLY the paragraph, no preamble or explanation.";
+  "You are a GRE prep writer. Compose ONE tight, cohesive paragraph in an " +
+  "academic style that naturally uses EVERY given word at least once " +
+  "(inflections OK). Rules: plain prose only (no markdown, no headings, no " +
+  "list labels); keep it concise — aim for about 12-18 words of prose per " +
+  "vocab word; return ONLY the paragraph, no preamble.";
 
 exports.generateParagraph = async (req, res) => {
   const count = Math.max(
@@ -71,9 +69,14 @@ exports.generateParagraph = async (req, res) => {
       .map((w) => w.word)
       .join(", ")}`;
 
+    // Cap output tokens roughly to what we need (~1.5 tokens per word).
+    // This keeps Gemini fast enough to fit within Vercel Hobby's 10s cap.
+    const maxOutputTokens = Math.min(2048, Math.max(256, words.length * 30));
+
     const paragraph = await callGemini({
       systemPrompt: PARAGRAPH_SYSTEM_PROMPT,
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      generationConfig: { maxOutputTokens, temperature: 0.9 },
     });
 
     return res.json({ paragraph: paragraph.trim(), words });
