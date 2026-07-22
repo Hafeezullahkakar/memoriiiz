@@ -44,21 +44,42 @@ app.use(cors());
 
 app.use(bodyParser.json());
 
-mongoose
-  .connect(
-    `mongodb+srv://hafeezullah2023:hafeezullah2023@cluster0.vddszir.mongodb.net/memoriiiz`,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
+// Cache the mongoose connection across serverless invocations. Vercel keeps
+// the module in memory between warm requests, so we avoid reconnecting every
+// time (which used to add ~2s per request and push us past the 10s timeout).
+const MONGO_URI =
+  "mongodb+srv://hafeezullah2023:hafeezullah2023@cluster0.vddszir.mongodb.net/memoriiiz";
+
+let dbPromise = null;
+const ensureDb = () => {
+  if (!dbPromise) {
+    dbPromise = mongoose
+      .connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
+      .then((m) => {
+        console.log("Connected to DB successfully!");
+        return m;
+      })
+      .catch((err) => {
+        dbPromise = null;
+        throw err;
+      });
+  }
+  return dbPromise;
+};
+
+// Kick off the connection at module load so it's ready by the time the first
+// request arrives. Failure is not fatal — AI-only routes still work.
+ensureDb().catch((err) =>
+  console.error(
+    "MongoDB connection failed (AI-only routes still work):",
+    err.message
   )
-  .then((r) => console.log("Connected to DB successfully!"))
-  .catch((err) =>
-    console.error(
-      "MongoDB connection failed (AI route still works):",
-      err.message
-    )
-  );
+);
+
+// Ensure the DB connection is ready before every request that might need it.
+app.use((req, res, next) => {
+  ensureDb().then(() => next()).catch(() => next());
+});
 
 app.use("/api", wordRoutes);
 app.use("/api/ai", aiRoutes);
