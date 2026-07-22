@@ -35,9 +35,9 @@ const callGemini = async ({ systemPrompt, messages, generationConfig }) => {
 // Provider: OpenCode (OpenAI-compatible) — activated when LLM_PROVIDER=opencode.
 // -----------------------------------------------------------------------------
 
-const OPENCODE_DEFAULT_BASE_URL = "https://opencode.ai/api/v1";
-const OPENCODE_DEFAULT_MODEL_CHAT = "moonshotai/kimi-k2.6";
-const OPENCODE_DEFAULT_MODEL_PARAGRAPH = "deepseek/deepseek-v4-flash-free";
+const OPENCODE_DEFAULT_BASE_URL = "https://opencode.ai/zen/v1";
+const OPENCODE_DEFAULT_MODEL_CHAT = "glm-5.2";
+const OPENCODE_DEFAULT_MODEL_PARAGRAPH = "deepseek-v4-flash-free";
 
 const callOpenCode = async ({
   systemPrompt,
@@ -83,11 +83,55 @@ const callOpenCode = async ({
 };
 
 // -----------------------------------------------------------------------------
+// Provider: Groq (OpenAI-compatible, LPU-fast) — activated when LLM_PROVIDER=groq.
+// -----------------------------------------------------------------------------
+
+const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
+const GROQ_DEFAULT_MODEL_CHAT = "llama-3.3-70b-versatile";
+const GROQ_DEFAULT_MODEL_PARAGRAPH = "llama-3.3-70b-versatile";
+
+const callGroq = async ({ systemPrompt, messages, generationConfig, modelType }) => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY not configured");
+  const model =
+    modelType === "paragraph"
+      ? process.env.GROQ_MODEL_PARAGRAPH || GROQ_DEFAULT_MODEL_PARAGRAPH
+      : process.env.GROQ_MODEL_CHAT || GROQ_DEFAULT_MODEL_CHAT;
+
+  const chatMessages = [
+    { role: "system", content: systemPrompt },
+    ...messages.map((m) => ({ role: m.role, content: m.content })),
+  ];
+
+  const response = await axios.post(
+    `${GROQ_BASE_URL}/chat/completions`,
+    {
+      model,
+      messages: chatMessages,
+      max_tokens: generationConfig?.maxOutputTokens,
+      temperature: generationConfig?.temperature ?? 0.9,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      timeout: 55000,
+    }
+  );
+
+  const text = response?.data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("Empty response from Groq");
+  return text;
+};
+
+// -----------------------------------------------------------------------------
 // Router: picks the provider based on LLM_PROVIDER env var.
 // -----------------------------------------------------------------------------
 
 const callLLM = async (args) => {
   const provider = (process.env.LLM_PROVIDER || "gemini").toLowerCase();
+  if (provider === "groq") return callGroq(args);
   if (provider === "opencode") return callOpenCode(args);
   return callGemini(args);
 };

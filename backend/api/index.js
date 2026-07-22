@@ -16,6 +16,16 @@ if (!process.env.VERCEL) {
       opts = {};
     }
     const all = opts?.all;
+    // Short-circuit loopback and literal IPs — never hit external DNS for them.
+    if (hostname === "localhost") {
+      return all ? cb(null, [{ address: "127.0.0.1", family: 4 }]) : cb(null, "127.0.0.1", 4);
+    }
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) {
+      return all ? cb(null, [{ address: hostname, family: 4 }]) : cb(null, hostname, 4);
+    }
+    if (hostname === "::1" || hostname.includes(":")) {
+      return all ? cb(null, [{ address: hostname, family: 6 }]) : cb(null, hostname, 6);
+    }
     dns.resolve4(hostname, (err, addrs) => {
       if (!err && addrs && addrs.length) {
         return all
