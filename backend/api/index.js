@@ -46,6 +46,7 @@ if (!process.env.VERCEL) {
 const wordRoutes = require("../routes/WordRoute");
 const userRoutes = require("../routes/UserRoute");
 const aiRoutes = require("../routes/AiRoute");
+const paragraphRoutes = require("../routes/ParagraphRoute");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -89,6 +90,7 @@ app.use((req, res, next) => {
 
 app.use("/api", wordRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/paragraphs", paragraphRoutes);
 app.use("/user", userRoutes);
 
 app.get("/", (req, res) => {

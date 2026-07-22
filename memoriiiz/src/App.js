@@ -25,6 +25,8 @@ import GREPage from "./pages/GREPage";
 import GREPlay from "./pages/GREPlay";
 import AskAI from "./pages/AskAI";
 import Practice from "./pages/Practice";
+import PracticeHistory from "./pages/PracticeHistory";
+import PracticeDetail from "./pages/PracticeDetail";
 import { ColorModeProvider } from "./theme/ThemeContext";
 
 function App() {
@@ -42,6 +44,8 @@ function App() {
             <Route path="/greplay" element={<GREPlay />} />
             <Route path="/askai" element={<AskAI />} />
             <Route path="/practice" element={<Practice />} />
+            <Route path="/practice/history" element={<PracticeHistory />} />
+            <Route path="/practice/history/:id" element={<PracticeDetail />} />
             <Route path="/about" element={<About />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/login" element={<Login />} />

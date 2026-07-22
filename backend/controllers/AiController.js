@@ -1,5 +1,6 @@
 const axios = require("axios");
 const Word = require("../models/WordModel");
+const Paragraph = require("../models/ParagraphModel");
 
 // -----------------------------------------------------------------------------
 // Provider: Gemini (Google) — untouched, kept as the default provider.
@@ -168,7 +169,7 @@ exports.generateParagraph = async (req, res) => {
     const sample = await Word.aggregate([
       { $match: { type, status } },
       { $sample: { size: count } },
-      { $project: { word: 1, meaning: 1, _id: 0 } },
+      { $project: { word: 1, meaning: 1 } },
     ]);
 
     if (!sample.length) {
@@ -177,7 +178,9 @@ exports.generateParagraph = async (req, res) => {
       });
     }
 
-    const words = sample.filter((w) => w.word);
+    const words = sample
+      .filter((w) => w.word)
+      .map((w) => ({ _id: w._id, word: w.word, meaning: w.meaning }));
     const userPrompt = `Words to include: ${words
       .map((w) => w.word)
       .join(", ")}`;
@@ -202,7 +205,29 @@ exports.generateParagraph = async (req, res) => {
       .replace(/\s+\n/g, "\n")
       .trim();
 
-    return res.json({ paragraph, words });
+    // Persist the paragraph. Save failures shouldn't affect the response.
+    let saved;
+    try {
+      saved = await Paragraph.create({
+        paragraph,
+        words: words.map((w) => ({
+          wordId: w._id,
+          word: w.word,
+          meaning: w.meaning,
+        })),
+        count: words.length,
+        provider: (process.env.LLM_PROVIDER || "gemini").toLowerCase(),
+      });
+    } catch (saveErr) {
+      console.error("Failed to persist paragraph:", saveErr.message);
+    }
+
+    return res.json({
+      _id: saved?._id,
+      paragraph,
+      words,
+      createdAt: saved?.createdAt,
+    });
   } catch (err) {
     const status = err.response?.status || 500;
     const detail =
