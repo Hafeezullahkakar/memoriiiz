@@ -1,10 +1,15 @@
 const axios = require("axios");
 const Word = require("../models/WordModel");
 
+// Default (chat/ask) uses the standard flash model. Paragraph generation
+// switches to the lite variant which returns much faster — critical for
+// staying under Vercel Hobby's 10s function cap.
 const GEMINI_MODEL = "gemini-flash-latest";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_MODEL_FAST = "gemini-flash-lite-latest";
+const geminiUrl = (model) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-const callGemini = async ({ systemPrompt, contents, generationConfig }) => {
+const callGemini = async ({ systemPrompt, contents, generationConfig, model }) => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
   const body = {
@@ -13,7 +18,7 @@ const callGemini = async ({ systemPrompt, contents, generationConfig }) => {
   };
   if (generationConfig) body.generationConfig = generationConfig;
   const response = await axios.post(
-    `${GEMINI_ENDPOINT}?key=${apiKey}`,
+    `${geminiUrl(model || GEMINI_MODEL)}?key=${apiKey}`,
     body,
     { headers: { "Content-Type": "application/json" }, timeout: 55000 }
   );
@@ -74,6 +79,7 @@ exports.generateParagraph = async (req, res) => {
     const maxOutputTokens = Math.min(2048, Math.max(256, words.length * 30));
 
     const paragraph = await callGemini({
+      model: GEMINI_MODEL_FAST,
       systemPrompt: PARAGRAPH_SYSTEM_PROMPT,
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
       generationConfig: { maxOutputTokens, temperature: 0.9 },
