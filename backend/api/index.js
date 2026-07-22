@@ -33,20 +33,19 @@ if (!process.env.VERCEL) {
     });
   };
 }
-const wordRoutes = require("./routes/WordRoute");
-const userRoutes = require("./routes/UserRoute");
-const aiRoutes = require("./routes/AiRoute");
+const wordRoutes = require("../routes/WordRoute");
+const userRoutes = require("../routes/UserRoute");
+const aiRoutes = require("../routes/AiRoute");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
-
 app.use(bodyParser.json());
 
 // Cache the mongoose connection across serverless invocations. Vercel keeps
 // the module in memory between warm requests, so we avoid reconnecting every
-// time (which used to add ~2s per request and push us past the 10s timeout).
+// time.
 const MONGO_URI =
   "mongodb+srv://hafeezullah2023:hafeezullah2023@cluster0.vddszir.mongodb.net/memoriiiz";
 
@@ -67,8 +66,6 @@ const ensureDb = () => {
   return dbPromise;
 };
 
-// Kick off the connection at module load so it's ready by the time the first
-// request arrives. Failure is not fatal — AI-only routes still work.
 ensureDb().catch((err) =>
   console.error(
     "MongoDB connection failed (AI-only routes still work):",
@@ -76,7 +73,6 @@ ensureDb().catch((err) =>
   )
 );
 
-// Ensure the DB connection is ready before every request that might need it.
 app.use((req, res, next) => {
   ensureDb().then(() => next()).catch(() => next());
 });
@@ -89,6 +85,12 @@ app.get("/", (req, res) => {
   res.send("Hey this is my API running 🥳");
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Only bind a port in local dev. On Vercel the platform invokes the exported
+// app directly for each request.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
