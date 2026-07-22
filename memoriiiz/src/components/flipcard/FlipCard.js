@@ -7,16 +7,18 @@ import { HiOutlineSpeakerWave, HiOutlineSpeakerXMark } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { 
-  Box, 
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
-  DialogContentText, 
-  DialogTitle, 
-  Button 
+import {
+  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+  Chip
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { parseMeaning } from "../../utils/parseMeaning";
 
 const FlipCard = ({ singleWord, setWords }) => {
   const theme = useTheme();
@@ -248,20 +250,69 @@ const FlipCard = ({ singleWord, setWords }) => {
               </span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px', minHeight: 0 }}>
-            <div style={{ marginBottom: '15px' }}>
-              <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Meaning</b> 
-              <i style={{ fontSize: '1.1rem', color: theme.palette.text.primary, wordBreak: 'break-word' }}>{singleWord?.meaning}</i>
-            </div>
-            <div>
-              <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Sentences</b>
-              {singleWord?.sentences?.map((sent, index) => {
-                return (
-                  <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: theme.palette.text.secondary, lineHeight: '1.5', wordBreak: 'break-word' }}>
-                    <span style={{ color: theme.palette.primary.main, fontWeight: 'bold', marginRight: '5px' }}>{index + 1}.</span> <i>{sent}</i>
-                  </p>
-                )
-              })}
-            </div>
+            {(() => {
+              const { definition, synonyms, antonyms } = parseMeaning(singleWord?.meaning);
+              return (
+                <>
+                  <div style={{ marginBottom: '15px' }}>
+                    <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Meaning</b>
+                    <i style={{ fontSize: '1.1rem', color: theme.palette.text.primary, wordBreak: 'break-word' }}>{definition}</i>
+                  </div>
+                  {synonyms.length > 0 && (
+                    <div style={{ marginBottom: '15px' }}>
+                      <b style={{ color: '#2e7d32', display: 'block', marginBottom: '6px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Synonyms</b>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                        {synonyms.map((s) => (
+                          <Chip
+                            key={s}
+                            label={s}
+                            size="small"
+                            sx={{
+                              bgcolor: isDark ? 'rgba(76,175,80,0.15)' : '#e8f5e9',
+                              color: isDark ? '#a5d6a7' : '#2e7d32',
+                              border: '1px solid',
+                              borderColor: isDark ? 'rgba(76,175,80,0.4)' : '#c8e6c9',
+                              fontWeight: 600,
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </div>
+                  )}
+                  {antonyms.length > 0 && (
+                    <div style={{ marginBottom: '15px' }}>
+                      <b style={{ color: '#c62828', display: 'block', marginBottom: '6px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Antonyms</b>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                        {antonyms.map((a) => (
+                          <Chip
+                            key={a}
+                            label={a}
+                            size="small"
+                            sx={{
+                              bgcolor: isDark ? 'rgba(211,47,47,0.15)' : '#ffebee',
+                              color: isDark ? '#ef9a9a' : '#c62828',
+                              border: '1px solid',
+                              borderColor: isDark ? 'rgba(211,47,47,0.4)' : '#ffcdd2',
+                              fontWeight: 600,
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </div>
+                  )}
+                  {singleWord?.sentences?.length > 0 && (
+                    <div>
+                      <b style={{ color: theme.palette.primary.main, display: 'block', marginBottom: '4px', fontSize: '0.9rem', textTransform: 'uppercase' }}>Sentences</b>
+                      {singleWord.sentences.map((sent, index) => (
+                        <p key={index} style={{ margin: '0 0 10px 0', fontSize: '0.95rem', color: theme.palette.text.secondary, lineHeight: '1.5', wordBreak: 'break-word' }}>
+                          <span style={{ color: theme.palette.primary.main, fontWeight: 'bold', marginRight: '5px' }}>{index + 1}.</span> <i>{sent}</i>
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
           <div className="buttonDiv" style={{ position: 'relative', marginTop: 'auto', paddingTop: '15px', borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
               <RiDeleteBinLine

@@ -20,7 +20,7 @@ import { ColorModeContext } from "../theme/ThemeContext";
 
 import { selectUser, selectToken } from "../redux/authSlice";
 import { MdAutoAwesome } from "react-icons/md";
-const pages = ["GRE Prep", "GRE Play", "General Vocabulary", "Contribute Word", "About"];
+const pages = ["GRE Prep", "GRE Play", "Practice", "General Vocabulary", "Contribute Word", "Ask AI", "About"];
 // const settings = ["Profile", "Account", "Dashboard", "Logout"];
 const settings = ["Account", "Logout"];
 
@@ -74,24 +74,19 @@ function Header() {
           <Typography
             variant="h6"
             noWrap
-            component="a"
-            href="/"
+            component={Link}
+            to="/"
             sx={{
               mr: 4,
               display: { xs: "none", md: "flex" },
               fontFamily: "'Poppins', sans-serif",
               fontWeight: 800,
               letterSpacing: ".1rem",
-              color: "inherit",
+              color: theme.palette.text.primary,
               textDecoration: "none",
             }}
           >
-            <Link
-              to="/"
-              style={{ color: theme.palette.text.primary, textDecoration: "none" }}
-            >
-              Memoriiiz
-            </Link>
+            Memoriiiz
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -129,7 +124,9 @@ function Header() {
                 if (page === "GRE Play") path = "greplay";
                 if (page === "General Vocabulary") path = "wordslist";
                 if (page === "Contribute Word") path = "addword";
-                
+                if (page === "Ask AI") path = "askai";
+                if (page === "Practice") path = "practice";
+
                 return (
                   <MenuItem key={page} onClick={handleCloseNavMenu}>
                     <Link
@@ -149,7 +146,8 @@ function Header() {
           <Typography
             variant="h5"
             noWrap
-            component="a"
+            component={Link}
+            to="/"
             sx={{
               mr: 2,
               display: { xs: "flex", md: "none" },
@@ -157,16 +155,11 @@ function Header() {
               fontFamily: "'Poppins', sans-serif",
               fontWeight: 800,
               letterSpacing: ".1rem",
-              color: "inherit",
+              color: theme.palette.text.primary,
               textDecoration: "none",
             }}
           >
-            <Link
-              to="/"
-              style={{ color: theme.palette.text.primary, textDecoration: "none" }}
-            >
-              Memoriiiz
-            </Link>
+            Memoriiiz
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => {
@@ -175,6 +168,7 @@ function Header() {
               if (page === "GRE Play") path = "greplay";
               if (page === "General Vocabulary") path = "wordslist";
               if (page === "Contribute Word") path = "addword";
+              if (page === "Ask AI") path = "askai";
 
               return (
                 <Button

@@ -23,6 +23,8 @@ import Signup from "./pages/auth/Signup";
 import Chat from "./pages/chat/Chat";
 import GREPage from "./pages/GREPage";
 import GREPlay from "./pages/GREPlay";
+import AskAI from "./pages/AskAI";
+import Practice from "./pages/Practice";
 import { ColorModeProvider } from "./theme/ThemeContext";
 
 function App() {
@@ -38,6 +40,8 @@ function App() {
             <Route path="/wordslist" element={<ViewAllWords />} />
             <Route path="/gre" element={<GREPage />} />
             <Route path="/greplay" element={<GREPlay />} />
+            <Route path="/askai" element={<AskAI />} />
+            <Route path="/practice" element={<Practice />} />
             <Route path="/about" element={<About />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/login" element={<Login />} />

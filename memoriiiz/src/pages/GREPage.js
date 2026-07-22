@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./ViewAllWords.css";
-import { 
-  Skeleton, 
-  Container, 
-  Typography, 
-  Box, 
-  ToggleButton, 
+import {
+  Skeleton,
+  Container,
+  Typography,
+  Box,
+  ToggleButton,
   ToggleButtonGroup,
   useTheme,
-  Pagination
+  Pagination,
+  Chip,
+  Stack
 } from "@mui/material";
 import FlipCard from "../components/flipcard/FlipCard";
+
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const GREPage = () => {
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("To Learn");
+  const [letter, setLetter] = useState("All");
   const [page, setPage] = useState(1);
   const wordsPerPage = 20;
   const theme = useTheme();
@@ -44,13 +49,33 @@ const GREPage = () => {
     }
   };
 
+  const handleLetterChange = (newLetter) => {
+    setLetter(newLetter);
+    setPage(1);
+  };
+
   const handlePageChange = (event, value) => {
     setPage(value);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const filteredWords = words.filter(word => word.status === filter || (!word.status && filter === "To Learn"));
-  
+  const statusFilteredWords = words.filter(
+    (word) => word.status === filter || (!word.status && filter === "To Learn")
+  );
+
+  const availableLetters = new Set(
+    statusFilteredWords
+      .map((w) => (w.word || "").charAt(0).toUpperCase())
+      .filter(Boolean)
+  );
+
+  const filteredWords =
+    letter === "All"
+      ? statusFilteredWords
+      : statusFilteredWords.filter(
+          (w) => (w.word || "").charAt(0).toUpperCase() === letter
+        );
+
   const indexOfLastWord = page * wordsPerPage;
   const indexOfFirstWord = indexOfLastWord - wordsPerPage;
   const currentWords = filteredWords.slice(indexOfFirstWord, indexOfLastWord);
@@ -100,6 +125,50 @@ const GREPage = () => {
           </ToggleButtonGroup>
         </Box>
 
+        <Box sx={{ mb: 4 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            flexWrap="wrap"
+            useFlexGap
+            justifyContent="center"
+            sx={{ px: { xs: 1, md: 0 } }}
+          >
+            <Chip
+              label="All"
+              onClick={() => handleLetterChange("All")}
+              color={letter === "All" ? "primary" : "default"}
+              variant={letter === "All" ? "filled" : "outlined"}
+              sx={{
+                fontWeight: 700,
+                minWidth: 48,
+                borderRadius: 2,
+              }}
+            />
+            {LETTERS.map((L) => {
+              const hasWords = availableLetters.has(L);
+              const isSelected = letter === L;
+              return (
+                <Chip
+                  key={L}
+                  label={L}
+                  onClick={() => hasWords && handleLetterChange(L)}
+                  color={isSelected ? "primary" : "default"}
+                  variant={isSelected ? "filled" : "outlined"}
+                  disabled={!hasWords}
+                  sx={{
+                    fontWeight: 700,
+                    minWidth: 40,
+                    borderRadius: 2,
+                    opacity: hasWords ? 1 : 0.35,
+                    cursor: hasWords ? "pointer" : "not-allowed",
+                  }}
+                />
+              );
+            })}
+          </Stack>
+        </Box>
+
         <div className="allCards">
           {loading ? (
             <div className="skeleton">
@@ -147,7 +216,9 @@ const GREPage = () => {
         {filteredWords.length === 0 && !loading && (
           <Box textAlign="center" mt={8}>
             <Typography variant="h5" color="text.secondary">
-              No words found in this category.
+              {letter === "All"
+                ? "No words found in this category."
+                : `No "${filter}" words starting with "${letter}".`}
             </Typography>
           </Box>
         )}
