@@ -38,11 +38,12 @@ const toGeminiContents = (messages) =>
   }));
 
 const PARAGRAPH_SYSTEM_PROMPT =
-  "You are a GRE prep writer. Compose ONE tight, cohesive paragraph in an " +
-  "academic style that naturally uses EVERY given word at least once " +
-  "(inflections OK). Rules: plain prose only (no markdown, no headings, no " +
-  "list labels); keep it concise — aim for about 12-18 words of prose per " +
-  "vocab word; return ONLY the paragraph, no preamble.";
+  "You are a GRE prep writer. Compose ONE cohesive paragraph in an academic " +
+  "style that naturally uses EVERY word in the given list at least once " +
+  "(inflections OK). Rules: (1) plain prose only — absolutely no markdown, " +
+  "no asterisks, no headings, no list labels; (2) aim for roughly 15-25 " +
+  "words of prose per vocab word; (3) return ONLY the paragraph — no " +
+  "preamble like 'Here is' or 'Let me', no explanation, no closing note.";
 
 exports.generateParagraph = async (req, res) => {
   const count = Math.max(
@@ -70,15 +71,26 @@ exports.generateParagraph = async (req, res) => {
       .map((w) => w.word)
       .join(", ")}`;
 
-    // Cap output tokens roughly to what we need (~1.5 tokens per word).
-    // This keeps Gemini fast enough to fit within Vercel Hobby's 10s cap.
-    const maxOutputTokens = Math.min(2048, Math.max(256, words.length * 30));
+    // Give Gemini generous room — ~90 tokens per vocab word covers the actual
+    // prose plus any internal reasoning tokens the model uses.
+    const maxOutputTokens = Math.min(
+      8192,
+      Math.max(1024, words.length * 90)
+    );
 
-    const paragraph = await callGemini({
+    const rawParagraph = await callGemini({
       systemPrompt: PARAGRAPH_SYSTEM_PROMPT,
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
       generationConfig: { maxOutputTokens, temperature: 0.9 },
     });
+
+    // Strip any leftover markdown artifacts even though we asked for plain
+    // prose — Gemini occasionally sneaks in asterisks or bullet markers.
+    const paragraph = rawParagraph
+      .replace(/\*+/g, "")
+      .replace(/^\s*[-•]\s+/gm, "")
+      .replace(/\s+\n/g, "\n")
+      .trim();
 
     return res.json({ paragraph: paragraph.trim(), words });
   } catch (err) {

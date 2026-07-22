@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import {
@@ -26,6 +26,7 @@ import {
   MdRefresh,
   MdOpenInNew,
 } from "react-icons/md";
+import { HiOutlineSpeakerWave, HiOutlineSpeakerXMark } from "react-icons/hi2";
 import { parseMeaning } from "../utils/parseMeaning";
 
 const API_BASE =
@@ -156,6 +157,42 @@ function Practice() {
   const [paragraph, setParagraph] = useState("");
   const [words, setWords] = useState([]);
   const [error, setError] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Cancel any in-flight speech when the paragraph changes or the page unmounts.
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+  }, [paragraph]);
+
+  const handleSpeak = () => {
+    if (!("speechSynthesis" in window)) {
+      toast.error("Speech synthesis not supported in this browser.");
+      return;
+    }
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(paragraph);
+    utterance.rate = 0.95;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -328,18 +365,37 @@ function Practice() {
                 >
                   Paragraph · {wordCount} words · {charCount} chars
                 </Typography>
-                <Tooltip title="Copy plain text">
-                  <IconButton
-                    onClick={handleCopy}
-                    sx={{
-                      border: "1px solid",
-                      borderColor: "divider",
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
-                    <MdContentCopy size={18} />
-                  </IconButton>
-                </Tooltip>
+                <Stack direction="row" spacing={1}>
+                  <Tooltip title={isSpeaking ? "Stop speaking" : "Read aloud"}>
+                    <IconButton
+                      onClick={handleSpeak}
+                      sx={{
+                        border: "1px solid",
+                        borderColor: isSpeaking ? "primary.main" : "divider",
+                        color: isSpeaking ? "primary.main" : "inherit",
+                        "&:hover": { bgcolor: "action.hover" },
+                      }}
+                    >
+                      {isSpeaking ? (
+                        <HiOutlineSpeakerXMark size={18} />
+                      ) : (
+                        <HiOutlineSpeakerWave size={18} />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Copy plain text">
+                    <IconButton
+                      onClick={handleCopy}
+                      sx={{
+                        border: "1px solid",
+                        borderColor: "divider",
+                        "&:hover": { bgcolor: "action.hover" },
+                      }}
+                    >
+                      <MdContentCopy size={18} />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
               </Stack>
 
               <Typography
