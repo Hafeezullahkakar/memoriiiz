@@ -16,6 +16,7 @@ import {
 import { MdContentCopy, MdCheckCircle, MdVolumeUp } from "react-icons/md";
 import { HiOutlineSpeakerWave, HiOutlineSpeakerXMark } from "react-icons/hi2";
 import { parseMeaning } from "../../utils/parseMeaning";
+import McqQuiz from "./McqQuiz";
 
 const API_BASE = process.env.REACT_APP_URI || "https://memoriiiz.vercel.app/api";
 
@@ -433,6 +434,8 @@ export default function ParagraphView({ entry, onWordMarkedKnown }) {
           })}
         </Stack>
       </Paper>
+
+      {entry.mcqs?.length > 0 && <McqQuiz mcqs={entry.mcqs} />}
     </>
   );
 }

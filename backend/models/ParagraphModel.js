@@ -1,5 +1,15 @@
 const mongoose = require("mongoose");
 
+const mcqSchema = new mongoose.Schema(
+  {
+    question: { type: String, required: true },
+    options: { type: [String], required: true },
+    correctIndex: { type: Number, required: true, min: 0 },
+    explanation: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
 const paragraphSchema = new mongoose.Schema(
   {
     paragraph: { type: String, required: true },
@@ -11,6 +21,7 @@ const paragraphSchema = new mongoose.Schema(
         meaning: String,
       },
     ],
+    mcqs: { type: [mcqSchema], default: [] },
     count: Number,
     provider: String,
     createdAt: { type: Date, default: Date.now },

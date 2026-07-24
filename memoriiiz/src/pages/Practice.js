@@ -14,6 +14,9 @@ import {
   Stack,
   CircularProgress,
   Alert,
+  Switch,
+  FormControlLabel,
+  Tooltip,
 } from "@mui/material";
 import { MdAutoAwesome, MdRefresh, MdOpenInNew, MdHistory } from "react-icons/md";
 import ParagraphView from "../components/paragraph/ParagraphView";
@@ -26,6 +29,7 @@ const COUNT_OPTIONS = [10, 15, 20, 30, 50, 75, 100];
 function Practice() {
   const t = useTokens();
   const [count, setCount] = useState(20);
+  const [withMcqs, setWithMcqs] = useState(false);
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState(null);
   const [error, setError] = useState("");
@@ -34,7 +38,10 @@ function Practice() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post(`${API_BASE}/ai/generate-paragraph`, { count });
+      const res = await axios.post(`${API_BASE}/ai/generate-paragraph`, {
+        count,
+        withMcqs,
+      });
       setEntry(res.data);
     } catch (err) {
       const msg = err.response?.data?.message || err.message || "Failed to generate.";
@@ -142,6 +149,35 @@ function Practice() {
               {loading ? "Generating…" : entry ? "Regenerate" : "Generate"}
             </Button>
           </Stack>
+
+          <Box sx={{ mt: 2, pt: 2, borderTop: `1px dashed ${t.colors.border}`, display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+            <Tooltip title="Also generate 8–10 GRE-style multiple-choice questions based on this paragraph. Takes a few extra seconds." arrow>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={withMcqs}
+                    onChange={(e) => setWithMcqs(e.target.checked)}
+                    disabled={loading}
+                    sx={{
+                      "& .MuiSwitch-switchBase.Mui-checked": { color: t.colors.primary },
+                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                        backgroundColor: t.colors.primary,
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+                    GRE Style Para
+                    <Typography component="span" sx={{ color: t.colors.textMuted, fontWeight: 500, fontSize: 12.5, ml: 0.75 }}>
+                      · adds 8–10 MCQs
+                    </Typography>
+                  </Typography>
+                }
+                sx={{ m: 0 }}
+              />
+            </Tooltip>
+          </Box>
         </Paper>
 
         {error && (
