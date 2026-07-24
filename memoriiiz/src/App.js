@@ -15,6 +15,7 @@ import AskAI from "./pages/AskAI";
 import Practice from "./pages/Practice";
 import PracticeHistory from "./pages/PracticeHistory";
 import PracticeDetail from "./pages/PracticeDetail";
+import Reads from "./pages/Reads";
 import About from "./pages/About";
 import Chat from "./pages/chat/Chat";
 import Login from "./pages/auth/Login";
@@ -42,6 +43,8 @@ function App() {
             <Route path="/practice" element={<Practice />} />
             <Route path="/practice/history" element={<PracticeHistory />} />
             <Route path="/practice/history/:id" element={<PracticeDetail />} />
+
+            <Route path="/reads" element={<Reads />} />
 
             <Route path="/addword" element={<AddNewWord />} />
             <Route path="/askai" element={<AskAI />} />

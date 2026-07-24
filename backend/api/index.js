@@ -47,6 +47,7 @@ const wordRoutes = require("../routes/WordRoute");
 const userRoutes = require("../routes/UserRoute");
 const aiRoutes = require("../routes/AiRoute");
 const paragraphRoutes = require("../routes/ParagraphRoute");
+const articleRoutes = require("../routes/ArticleRoute");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -91,6 +92,7 @@ app.use((req, res, next) => {
 app.use("/api", wordRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/paragraphs", paragraphRoutes);
+app.use("/api", articleRoutes);
 app.use("/user", userRoutes);
 
 app.get("/", (req, res) => {

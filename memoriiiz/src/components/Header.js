@@ -27,6 +27,7 @@ const NAV = [
   { label: "Words", to: "/words" },
   { label: "Play", to: "/play" },
   { label: "Practice", to: "/practice" },
+  { label: "Reads", to: "/reads" },
   { label: "Ask AI", to: "/askai" },
   { label: "Add Word", to: "/addword" },
   { label: "About", to: "/about" },
