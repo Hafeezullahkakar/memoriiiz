@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import ReactCardFlip from "react-card-flip";
+import "./FlipCard.css";
 
 import { RiDeleteBinLine } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
@@ -190,7 +191,7 @@ const FlipCard = ({ singleWord, setWords }) => {
                   fontSize: '0.75rem', 
                   fontWeight: 'bold',
                   padding: '5px 12px', 
-                  borderRadius: '20px', 
+                  borderRadius: '3px',
                   backgroundColor: singleWord.status === 'Known' 
                       ? (isDark ? 'rgba(76, 175, 80, 0.9)' : '#4caf50') 
                       : (isDark ? 'rgba(255, 152, 0, 0.9)' : '#ff9800'),
@@ -233,7 +234,7 @@ const FlipCard = ({ singleWord, setWords }) => {
                   fontSize: '0.75rem', 
                   fontWeight: 'bold',
                   padding: '5px 12px', 
-                  borderRadius: '20px', 
+                  borderRadius: '3px',
                   backgroundColor: singleWord.status === 'Known' 
                       ? (isDark ? 'rgba(76, 175, 80, 0.2)' : '#e8f5e9') 
                       : (isDark ? 'rgba(255, 152, 0, 0.2)' : '#fff3e0'),
@@ -350,7 +351,7 @@ const FlipCard = ({ singleWord, setWords }) => {
         onClick={(e) => e.stopPropagation()} // Prevent card flip when clicking on dialog
         PaperProps={{
           style: {
-            borderRadius: '16px',
+            borderRadius: '7px',
             padding: '8px',
             backgroundColor: theme.palette.background.paper
           }
@@ -381,8 +382,8 @@ const FlipCard = ({ singleWord, setWords }) => {
             variant="contained" 
             color="error"
             autoFocus
-            sx={{ 
-              borderRadius: '8px',
+            sx={{
+              borderRadius: '5px',
               fontWeight: 700,
               textTransform: 'none',
               px: 3,

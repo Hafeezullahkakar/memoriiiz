@@ -11,27 +11,23 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Chip,
   Stack,
   CircularProgress,
   Alert,
-  useTheme,
 } from "@mui/material";
 import { MdAutoAwesome, MdRefresh, MdOpenInNew, MdHistory } from "react-icons/md";
 import ParagraphView from "../components/paragraph/ParagraphView";
+import PageHeader from "../components/ui/PageHeader";
+import { useTokens } from "../theme/tokens";
 
-const API_BASE =
-  process.env.REACT_APP_URI || "https://memoriiiz.vercel.app/api";
-
+const API_BASE = process.env.REACT_APP_URI || "https://memoriiiz.vercel.app/api";
 const COUNT_OPTIONS = [10, 15, 20, 30, 50, 75, 100];
 
-const SAMPLE_HINT = "Words are pulled at random from your \"To Learn\" GRE list.";
-
 function Practice() {
-  const theme = useTheme();
+  const t = useTokens();
   const [count, setCount] = useState(20);
   const [loading, setLoading] = useState(false);
-  const [entry, setEntry] = useState(null); // {paragraph, words, _id, createdAt}
+  const [entry, setEntry] = useState(null);
   const [error, setError] = useState("");
 
   const handleGenerate = async () => {
@@ -51,72 +47,72 @@ function Practice() {
   return (
     <Box
       sx={{
-        bgcolor: "background.default",
-        minHeight: "calc(100vh - 64px)",
-        py: 5,
+        bgcolor: t.colors.bg,
+        minHeight: "100vh",
+        py: { xs: 3, md: 5 },
         backgroundImage:
-          theme.palette.mode === "dark"
-            ? "radial-gradient(circle at 20% 0%, rgba(99,102,241,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 100%, rgba(168,85,247,0.08) 0%, transparent 50%)"
-            : "radial-gradient(circle at 20% 0%, rgba(99,102,241,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 100%, rgba(168,85,247,0.05) 0%, transparent 50%)",
+          t.mode === "dark"
+            ? "radial-gradient(circle at 20% 0%, rgba(129,140,248,0.08) 0%, transparent 50%)"
+            : "radial-gradient(circle at 20% 0%, rgba(79,70,229,0.05) 0%, transparent 50%)",
       }}
     >
       <Container maxWidth="md">
-        <Box textAlign="center" mb={4}>
-          <Box sx={{ display: "inline-flex", color: "primary.main", mb: 2 }}>
-            <MdAutoAwesome size={48} />
-          </Box>
-          <Typography variant="h3" sx={{ fontWeight: 800, mb: 1 }}>
-            Typing Practice
-          </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-            Generate a GRE-style paragraph packed with words you're learning.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Copy it into{" "}
-            <Box
-              component="a"
-              href="https://monkeytype.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ color: "primary.main", fontWeight: 600 }}
+        <PageHeader
+          title="AI Practice"
+          subtitle={
+            <>
+              Generate a paragraph packed with words you're learning. Paste it into{" "}
+              <Box
+                component="a"
+                href="https://monkeytype.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ color: t.colors.primary, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 0.25 }}
+              >
+                MonkeyType <MdOpenInNew size={12} />
+              </Box>{" "}
+              to type.
+            </>
+          }
+          right={
+            <Button
+              component={RouterLink}
+              to="/practice/history"
+              startIcon={<MdHistory />}
+              variant="outlined"
+              size="small"
+              sx={{
+                borderRadius: t.radii.md,
+                fontWeight: 700,
+                borderColor: t.colors.border,
+                color: t.colors.text,
+                "&:hover": { borderColor: t.colors.primary, bgcolor: t.colors.primarySoft },
+              }}
             >
-              MonkeyType <MdOpenInNew size={12} />
-            </Box>{" "}
-            (Custom test → paste) to practice.
-          </Typography>
-        </Box>
-
-        <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
-          <Button
-            component={RouterLink}
-            to="/practice/history"
-            startIcon={<MdHistory />}
-            variant="outlined"
-            sx={{ textTransform: "none", fontWeight: 600 }}
-          >
-            View history
-          </Button>
-        </Stack>
+              History
+            </Button>
+          }
+        />
 
         <Paper
           elevation={0}
           sx={{
-            p: 3,
-            borderRadius: 4,
-            border: "1px solid",
-            borderColor: "divider",
-            bgcolor: "background.paper",
+            p: { xs: 2, sm: 2.5 },
+            borderRadius: t.radii.lg,
+            border: `1px solid ${t.colors.border}`,
+            bgcolor: t.colors.surface,
             mb: 3,
           }}
         >
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
-            <FormControl sx={{ minWidth: 180 }}>
-              <InputLabel>Number of words</InputLabel>
+            <FormControl sx={{ minWidth: 180 }} size="small">
+              <InputLabel>Word count</InputLabel>
               <Select
                 value={count}
-                label="Number of words"
+                label="Word count"
                 onChange={(e) => setCount(e.target.value)}
                 disabled={loading}
+                sx={{ borderRadius: t.radii.md, "& fieldset": { borderColor: t.colors.border } }}
               >
                 {COUNT_OPTIONS.map((n) => (
                   <MenuItem key={n} value={n}>
@@ -125,40 +121,40 @@ function Practice() {
                 ))}
               </Select>
             </FormControl>
-            <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-              {SAMPLE_HINT}
+            <Typography sx={{ flex: 1, fontSize: 13.5, color: t.colors.textMuted }}>
+              Words are pulled at random from your <b>To Learn</b> list.
             </Typography>
             <Button
               variant="contained"
               size="large"
               onClick={handleGenerate}
               disabled={loading}
-              startIcon={
-                loading ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : entry ? (
-                  <MdRefresh />
-                ) : (
-                  <MdAutoAwesome />
-                )
-              }
+              startIcon={loading ? <CircularProgress size={16} color="inherit" /> : entry ? <MdRefresh /> : <MdAutoAwesome />}
               sx={{
-                textTransform: "none",
-                fontWeight: 700,
-                px: 4,
-                py: 1.5,
-                background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-                boxShadow: "0 4px 14px rgba(99, 102, 241, 0.35)",
-                "&:hover": { background: "linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)" },
+                fontWeight: 800,
+                px: 3.5,
+                py: 1.25,
+                borderRadius: t.radii.md,
+                background: t.gradients.primary,
+                boxShadow: t.shadows.primary,
               }}
             >
-              {loading ? "Generating..." : entry ? "Regenerate" : "Generate"}
+              {loading ? "Generating…" : entry ? "Regenerate" : "Generate"}
             </Button>
           </Stack>
         </Paper>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+          <Alert
+            severity="error"
+            sx={{
+              mb: 3,
+              borderRadius: t.radii.md,
+              bgcolor: t.colors.dangerSoft,
+              color: t.colors.danger,
+              border: `1px solid ${t.colors.danger}`,
+            }}
+          >
             {error}
           </Alert>
         )}
@@ -166,9 +162,20 @@ function Practice() {
         {entry && <ParagraphView entry={entry} />}
 
         {!entry && !loading && !error && (
-          <Box textAlign="center" mt={6}>
-            <Typography color="text.secondary">
-              Pick a word count and hit Generate to create a practice paragraph.
+          <Box
+            sx={{
+              mt: 2,
+              p: { xs: 4, sm: 6 },
+              textAlign: "center",
+              borderRadius: t.radii.xl,
+              border: `2px dashed ${t.colors.border}`,
+              bgcolor: t.colors.surface,
+            }}
+          >
+            <Box sx={{ fontSize: 48, mb: 1 }}>✨</Box>
+            <Typography sx={{ fontWeight: 700, mb: 0.5 }}>Ready when you are</Typography>
+            <Typography color="text.secondary" sx={{ fontSize: 14 }}>
+              Pick a word count and hit <b>Generate</b> to create a practice paragraph.
             </Typography>
           </Box>
         )}

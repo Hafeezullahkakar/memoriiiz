@@ -5,30 +5,29 @@ import "react-toastify/dist/ReactToastify.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectToken } from "../redux/authSlice";
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  TextField, 
-  Button, 
-  Paper, 
-  IconButton, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  ListItemSecondaryAction,
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
-  DialogContentText, 
-  DialogTitle, 
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   InputAdornment,
-  useTheme
 } from "@mui/material";
 import { MdAdd, MdDelete, MdSend, MdTranslate } from "react-icons/md";
+import PageHeader from "../components/ui/PageHeader";
+import { useTokens } from "../theme/tokens";
+
+const API_BASE = process.env.REACT_APP_URI || "https://memoriiiz.vercel.app/api";
 
 const AddNewWord = () => {
-  const theme = useTheme();
+  const t = useTokens();
   const location = useLocation();
   const { state } = location;
   const token = useSelector(selectToken);
@@ -40,116 +39,95 @@ const AddNewWord = () => {
   const [video, setVideo] = useState("");
   const [sentences, setSentences] = useState([]);
   const [sentence, setSentence] = useState("");
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
-    if (state) {
-      const fetchWords = async () => {
-        try {
-          const response = await axios.get(
-            `https://memoriiiz.vercel.app/api/getWordById/${state}`
-          );
-          setWord(response?.data?.word);
-          setMeaning(response?.data?.meaning);
-          setPicture(response?.data?.picture);
-          setVideo(response?.data?.video);
-          setSentences([...response?.data?.sentences]);
-        } catch (error) {
-          console.error("Error fetching word:", error);
-          toast.error("Failed to load word data");
-        }
-      };
-      fetchWords();
-    }
+    if (!state) return;
+    (async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/getWordById/${state}`);
+        setWord(res?.data?.word || "");
+        setMeaning(res?.data?.meaning || "");
+        setPicture(res?.data?.picture || "");
+        setVideo(res?.data?.video || "");
+        setSentences([...(res?.data?.sentences || [])]);
+      } catch (e) {
+        toast.error("Failed to load word");
+      }
+    })();
   }, [state]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!word || !meaning) {
-      toast.error("Word and Meaning are required!");
+      toast.error("Word and Meaning are required");
       return;
     }
-
-    setOpenConfirmDialog(true);
+    setConfirmOpen(true);
   };
 
   const handleConfirmSubmit = async () => {
-    setOpenConfirmDialog(false);
-
-    const newWord = {
-      word,
-      meaning,
-      picture,
-      video,
-      sentences,
-    };
-
+    setConfirmOpen(false);
+    const payload = { word, meaning, picture, video, sentences };
     try {
-      const apiUrl = `https://memoriiiz.vercel.app/api/${state ? `updateWord/${state}` : 'addWord'}`;
-      const method = state ? 'put' : 'post';
-      
-      const response = await axios[method](apiUrl, newWord, {
-        headers: { "x-auth-token": token },
-      });
-
-      toast.success(state ? "Word updated successfully!" : "Word added successfully!");
-      navigate("/wordslist");
-    } catch (error) {
-      console.error("Error submitting word:", error);
-      toast.error(error.response?.data?.message || "Something went wrong!");
+      const url = `${API_BASE}/${state ? `updateWord/${state}` : "addWord"}`;
+      const method = state ? "put" : "post";
+      await axios[method](url, payload, { headers: { "x-auth-token": token } });
+      toast.success(state ? "Word updated" : "Word added");
+      navigate("/words");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong");
     }
   };
 
   const addSentence = () => {
-    if (sentence.trim() !== "") {
+    if (sentence.trim()) {
       setSentences([...sentences, sentence.trim()]);
       setSentence("");
     }
   };
+  const removeSentence = (i) => setSentences(sentences.filter((_, idx) => idx !== i));
 
-  const removeSentence = (index) => {
-    setSentences(sentences.filter((_, i) => i !== index));
+  const inputSx = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: t.radii.md,
+      bgcolor: t.colors.bg,
+      "& fieldset": { borderColor: t.colors.border },
+      "&:hover fieldset": { borderColor: t.colors.borderStrong },
+      "&.Mui-focused fieldset": { borderColor: t.colors.primary },
+    },
   };
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 8 }}>
+    <Box sx={{ bgcolor: t.colors.bg, minHeight: "100vh", py: { xs: 3, md: 5 } }}>
       <Container maxWidth="sm">
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            p: { xs: 3, md: 5 }, 
-            borderRadius: 4, 
-            border: '1px solid', 
-            borderColor: 'divider',
-            bgcolor: 'background.paper'
+        <PageHeader
+          title={state ? "Edit Word" : "Add a Word"}
+          subtitle={state ? "Refine an entry in your vocabulary." : "Contribute a new word to your library."}
+        />
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2.5, md: 4 },
+            borderRadius: t.radii.xl,
+            border: `1px solid ${t.colors.border}`,
+            bgcolor: t.colors.surface,
           }}
         >
-          <Box textAlign="center" mb={4}>
-            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 2 }}>
-              {state ? "Enhance Your Library" : "Expand Vocabulary"}
-            </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 800, mt: 1, color: 'text.primary' }}>
-              {state ? "Edit Word" : "Contribute New Word"}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {state ? "Refine the details of your saved word." : "Add a new word to your collection and start mastering it."}
-            </Typography>
-          </Box>
-
           <form onSubmit={handleSubmit}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
               <TextField
                 fullWidth
                 label="Word"
-                variant="outlined"
                 required
                 value={word}
                 onChange={(e) => setWord(e.target.value)}
+                sx={inputSx}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <MdTranslate color={theme.palette.primary.main} />
+                      <MdTranslate color={t.colors.primary} />
                     </InputAdornment>
                   ),
                 }}
@@ -158,148 +136,129 @@ const AddNewWord = () => {
               <TextField
                 fullWidth
                 label="Meaning"
-                variant="outlined"
                 required
                 multiline
-                rows={2}
+                rows={3}
                 value={meaning}
                 onChange={(e) => setMeaning(e.target.value)}
+                helperText='Format: "Definition. Synonyms: a, b. Antonym: c."'
+                sx={inputSx}
               />
 
               <TextField
                 fullWidth
-                label="Picture URL (Optional)"
-                variant="outlined"
+                label="Picture URL (optional)"
                 value={picture}
                 onChange={(e) => setPicture(e.target.value)}
                 placeholder="https://example.com/image.jpg"
+                sx={inputSx}
               />
 
               <TextField
                 fullWidth
-                label="Video URL (Optional)"
-                variant="outlined"
+                label="Video URL (optional)"
                 value={video}
                 onChange={(e) => setVideo(e.target.value)}
-                placeholder="https://youtube.com/..."
+                placeholder="https://youtube.com/…"
+                sx={inputSx}
               />
 
               <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: 'text.secondary' }}>
+                <Typography sx={{ mb: 1, fontWeight: 800, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: t.colors.textMuted }}>
                   Example Sentences
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
                   <TextField
                     fullWidth
                     size="small"
-                    placeholder="Add an example sentence..."
+                    placeholder="Add an example sentence…"
                     value={sentence}
                     onChange={(e) => setSentence(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSentence())}
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSentence())}
+                    sx={inputSx}
                   />
-                  <Button 
-                    variant="contained" 
+                  <Button
+                    variant="contained"
                     onClick={addSentence}
-                    sx={{ minWidth: 'unset', px: 2 }}
+                    sx={{
+                      minWidth: 48,
+                      px: 0,
+                      borderRadius: t.radii.md,
+                      background: t.gradients.primary,
+                    }}
                   >
-                    <MdAdd size={24} />
+                    <MdAdd size={22} />
                   </Button>
                 </Box>
 
-                <List sx={{ bgcolor: 'background.default', borderRadius: 2 }}>
-                  {sentences.map((sent, index) => (
-                    <ListItem 
-                      key={index}
-                      divider={index !== sentences.length - 1}
-                      sx={{ py: 1 }}
-                    >
-                      <ListItemText 
-                        primary={sent} 
-                        primaryTypographyProps={{ variant: 'body2', fontStyle: 'italic' }} 
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton edge="end" onClick={() => removeSentence(index)} size="small">
-                          <MdDelete color={theme.palette.error.main} />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
-                  {sentences.length === 0 && (
-                    <Typography variant="caption" sx={{ display: 'block', p: 2, textAlign: 'center', color: 'text.disabled' }}>
-                      No sentences added yet.
+                <Box sx={{ borderRadius: t.radii.md, bgcolor: t.colors.bg, border: `1px solid ${t.colors.border}`, overflow: "hidden" }}>
+                  {sentences.length === 0 ? (
+                    <Typography sx={{ p: 2, textAlign: "center", color: t.colors.textFaint, fontSize: 13 }}>
+                      No examples yet.
                     </Typography>
+                  ) : (
+                    sentences.map((sent, i) => (
+                      <Box
+                        key={i}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 1,
+                          px: 2,
+                          py: 1.25,
+                          borderTop: i > 0 ? `1px solid ${t.colors.border}` : "none",
+                        }}
+                      >
+                        <Typography sx={{ fontStyle: "italic", fontSize: 14, flex: 1 }}>{sent}</Typography>
+                        <IconButton size="small" onClick={() => removeSentence(i)} sx={{ color: t.colors.danger }}>
+                          <MdDelete />
+                        </IconButton>
+                      </Box>
+                    ))
                   )}
-                </List>
+                </Box>
               </Box>
 
               <Button
-                fullWidth
                 type="submit"
                 variant="contained"
                 size="large"
                 startIcon={<MdSend />}
-                sx={{ 
-                  py: 1.5, 
-                  fontWeight: 700, 
-                  borderRadius: 2,
-                  boxShadow: '0 4px 14px 0 rgba(0, 118, 255, 0.39)',
+                sx={{
+                  py: 1.5,
+                  fontWeight: 800,
+                  borderRadius: t.radii.md,
+                  background: t.gradients.primary,
+                  boxShadow: t.shadows.primary,
                 }}
               >
-                {state ? "Update Word" : "Save to Vocabulary"}
+                {state ? "Update Word" : "Save Word"}
               </Button>
             </Box>
           </form>
         </Paper>
       </Container>
 
-      {/* Confirmation Dialog */}
       <Dialog
-        open={openConfirmDialog}
-        onClose={() => setOpenConfirmDialog(false)}
-        aria-labelledby="confirm-dialog-title"
-        aria-describedby="confirm-dialog-description"
-        PaperProps={{
-          style: {
-            borderRadius: '16px',
-            padding: '8px',
-            backgroundColor: theme.palette.background.paper
-          }
-        }}
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        PaperProps={{ sx: { borderRadius: t.radii.lg, p: 1 } }}
       >
-        <DialogTitle id="confirm-dialog-title" sx={{ fontWeight: 800, pb: 1 }}>
-          {state ? "Confirm Update" : "Confirm Addition"}
-        </DialogTitle>
-        <DialogContent sx={{ pb: 2 }}>
-          <DialogContentText id="confirm-dialog-description" sx={{ color: theme.palette.text.primary }}>
-            {state 
-              ? `Are you sure you want to update the word "${word}"?` 
-              : `Are you sure you want to add the word "${word}" to your vocabulary list?`}
+        <DialogTitle sx={{ fontWeight: 800 }}>{state ? "Update this word?" : "Add this word?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {state ? `Save changes to "${word}"?` : `Add "${word}" to your vocabulary?`}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
-            onClick={() => setOpenConfirmDialog(false)} 
-            sx={{ 
-              color: theme.palette.text.secondary,
-              fontWeight: 600,
-              textTransform: 'none',
-              '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' }
-            }}
-          >
+          <Button onClick={() => setConfirmOpen(false)} sx={{ fontWeight: 700 }}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleConfirmSubmit} 
-            variant="contained" 
-            color="primary"
-            autoFocus
-            sx={{ 
-              borderRadius: '8px',
-              fontWeight: 700,
-              textTransform: 'none',
-              px: 3,
-              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
-            }}
+          <Button
+            onClick={handleConfirmSubmit}
+            variant="contained"
+            sx={{ fontWeight: 800, borderRadius: t.radii.md, background: t.gradients.primary }}
           >
             Confirm
           </Button>

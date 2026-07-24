@@ -66,7 +66,7 @@ function MessageBubble({ message, isUser }) {
             width: 36,
             height: 36,
             flexShrink: 0,
-            background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+            background: "linear-gradient(135deg, #0A0E13 0%, #1F2937 100%)",
             boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)",
           }}
         >
@@ -200,7 +200,7 @@ function TypingBubble() {
         sx={{
           width: 36,
           height: 36,
-          background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+          background: "linear-gradient(135deg, #0A0E13 0%, #1F2937 100%)",
           boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)",
         }}
       >
@@ -346,7 +346,7 @@ function AskAI() {
               sx={{
                 width: 40,
                 height: 40,
-                background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+                background: "linear-gradient(135deg, #0A0E13 0%, #1F2937 100%)",
                 boxShadow: "0 4px 14px rgba(99, 102, 241, 0.35)",
               }}
             >
@@ -480,7 +480,7 @@ function AskAI() {
             disabled={loading || !input.trim()}
             sx={{
               background: !loading && input.trim()
-                ? "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)"
+                ? "linear-gradient(135deg, #0A0E13 0%, #1F2937 100%)"
                 : "action.disabledBackground",
               color: "#fff",
               width: 40,
@@ -488,7 +488,7 @@ function AskAI() {
               transition: "transform 0.15s",
               "&:hover": {
                 transform: "scale(1.05)",
-                background: "linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)",
+                background: "linear-gradient(135deg, #000000 0%, #111827 100%)",
               },
               "&.Mui-disabled": {
                 bgcolor: "action.disabledBackground",
