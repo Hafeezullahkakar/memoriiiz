@@ -24,8 +24,10 @@ const signAccessToken = (userId) =>
 const signRefreshToken = (userId) => {
   const jti = crypto.randomBytes(24).toString("hex");
   const expiresAt = new Date(Date.now() + REFRESH_TTL_MS);
+  // jwtid option sets the standard `jti` claim; don't also duplicate it in
+  // the payload (jsonwebtoken throws on the conflict).
   const token = jwt.sign(
-    { sub: String(userId), type: "refresh", jti },
+    { sub: String(userId), type: "refresh" },
     REFRESH_SECRET,
     { expiresIn: `${REFRESH_TTL_DAYS}d`, jwtid: jti }
   );
