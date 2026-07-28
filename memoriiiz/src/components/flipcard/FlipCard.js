@@ -128,16 +128,19 @@ const FlipCard = ({ singleWord, setWords }) => {
     }
   };
 
+  const STATUS_CYCLE = ["To Learn", "Focus", "Known"];
   const toggleStatus = async (e) => {
     e.stopPropagation();
-    const newStatus = singleWord.status === "Known" ? "To Learn" : "Known";
+    const current = singleWord.status || "To Learn";
+    const i = STATUS_CYCLE.indexOf(current);
+    const newStatus = STATUS_CYCLE[(i + 1) % STATUS_CYCLE.length];
     try {
       const apiUrl = process.env.REACT_APP_URI || 'https://memoriiiz.vercel.app/api';
       const response = await axios.put(`${apiUrl}/updateWord/${singleWord._id}`, {
         status: newStatus
       });
       if (response.data) {
-        setWords((prevWords) => 
+        setWords((prevWords) =>
           prevWords.map((w) => w._id === singleWord._id ? { ...w, status: newStatus } : w)
         );
         toast.success(`Marked as ${newStatus}`);
@@ -146,6 +149,18 @@ const FlipCard = ({ singleWord, setWords }) => {
       console.error("Error updating word status:", error);
       toast.error("Failed to update status");
     }
+  };
+
+  // Color mapping for the status pill on the front/back of the card.
+  const statusColors = (status, isDark) => {
+    if (status === "Known") return { bg: isDark ? 'rgba(76, 175, 80, 0.9)' : '#22c55e', text: 'white' };
+    if (status === "Focus") return { bg: isDark ? 'rgba(139, 92, 246, 0.9)' : '#7c3aed', text: 'white' };
+    return { bg: isDark ? 'rgba(245, 158, 11, 0.9)' : '#f59e0b', text: 'white' };
+  };
+  const statusColorsBack = (status, isDark) => {
+    if (status === "Known") return { bg: isDark ? 'rgba(34,197,94,0.2)' : '#dcfce7', text: isDark ? '#86efac' : '#16a34a', border: '#22c55e' };
+    if (status === "Focus") return { bg: isDark ? 'rgba(139,92,246,0.2)' : '#ede9fe', text: isDark ? '#c4b5fd' : '#7c3aed', border: '#8b5cf6' };
+    return { bg: isDark ? 'rgba(245,158,11,0.2)' : '#fef3c7', text: isDark ? '#fcd34d' : '#d97706', border: '#f59e0b' };
   };
 
   return (
@@ -185,25 +200,28 @@ const FlipCard = ({ singleWord, setWords }) => {
                   style={{ fontSize: '1.6rem', cursor: 'pointer', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
                 />
               )}
-              <span 
-                onClick={toggleStatus}
-                style={{ 
-                  fontSize: '0.75rem', 
-                  fontWeight: 'bold',
-                  padding: '5px 12px', 
-                  borderRadius: '3px',
-                  backgroundColor: singleWord.status === 'Known' 
-                      ? (isDark ? 'rgba(76, 175, 80, 0.9)' : '#4caf50') 
-                      : (isDark ? 'rgba(255, 152, 0, 0.9)' : '#ff9800'),
-                  color: 'white',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-              >
-                {singleWord.status || 'To Learn'}
-              </span>
+              {(() => {
+                const c = statusColors(singleWord.status, isDark);
+                return (
+                  <span
+                    onClick={toggleStatus}
+                    style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                      padding: '5px 12px',
+                      borderRadius: '3px',
+                      backgroundColor: c.bg,
+                      color: c.text,
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    {singleWord.status || 'To Learn'}
+                  </span>
+                );
+              })()}
           </div>
           <h4 style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)', margin: 0, zIndex: 2, position: 'relative' }}>{singleWord?.word}</h4>
         </div>
@@ -228,27 +246,28 @@ const FlipCard = ({ singleWord, setWords }) => {
                   style={{ fontSize: '1.6rem', cursor: 'pointer', color: theme.palette.primary.main }}
                 />
               )}
-              <span 
-                onClick={toggleStatus}
-                style={{ 
-                  fontSize: '0.75rem', 
-                  fontWeight: 'bold',
-                  padding: '5px 12px', 
-                  borderRadius: '3px',
-                  backgroundColor: singleWord.status === 'Known' 
-                      ? (isDark ? 'rgba(76, 175, 80, 0.2)' : '#e8f5e9') 
-                      : (isDark ? 'rgba(255, 152, 0, 0.2)' : '#fff3e0'),
-                  color: singleWord.status === 'Known' 
-                      ? (isDark ? '#81c784' : '#2e7d32') 
-                      : (isDark ? '#ffb74d' : '#ef6c00'),
-                  border: `1px solid ${singleWord.status === 'Known' ? '#4caf50' : '#ff9800'}`,
-                  cursor: 'pointer',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-              >
-                {singleWord.status || 'To Learn'}
-              </span>
+              {(() => {
+                const c = statusColorsBack(singleWord.status, isDark);
+                return (
+                  <span
+                    onClick={toggleStatus}
+                    style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                      padding: '5px 12px',
+                      borderRadius: '3px',
+                      backgroundColor: c.bg,
+                      color: c.text,
+                      border: `1px solid ${c.border}`,
+                      cursor: 'pointer',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    {singleWord.status || 'To Learn'}
+                  </span>
+                );
+              })()}
           </div>
           <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px', minHeight: 0 }}>
             {(() => {

@@ -42,9 +42,11 @@ const Homepage = () => {
       try {
         const res = await axios.get(`${API_BASE}/getAllWords`);
         if (!alive) return;
-        const total = res.data?.length || 0;
-        const known = res.data?.filter((w) => w.status === "Known").length || 0;
-        setCounts({ total, known, toLearn: total - known });
+        const list = res.data || [];
+        const total = list.length;
+        const known = list.filter((w) => w.status === "Known").length;
+        const focus = list.filter((w) => w.status === "Focus").length;
+        setCounts({ total, known, focus, toLearn: total - known - focus });
       } catch (e) {
         // best-effort; homepage should still render
       }
@@ -65,14 +67,15 @@ const Homepage = () => {
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
+                gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" },
                 gap: { xs: 1, sm: 3 },
                 textAlign: "center",
               }}
             >
               <Stat label="Total Words" value={counts.total} />
-              <Stat label="Known" value={counts.known} accent={t.colors.known} />
               <Stat label="To Learn" value={counts.toLearn} accent={t.colors.toLearn} />
+              <Stat label="Focus" value={counts.focus} accent={t.colors.primary} />
+              <Stat label="Known" value={counts.known} accent={t.colors.known} />
             </Box>
           </Container>
         </Box>

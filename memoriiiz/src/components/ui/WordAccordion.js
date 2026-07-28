@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useTokens } from "../../theme/tokens";
 import { parseMeaning } from "../../utils/parseMeaning";
-import StatusChip from "./StatusChip";
+import StatusChip, { nextStatus } from "./StatusChip";
 
 const API_BASE = process.env.REACT_APP_URI || "https://memoriiiz.vercel.app/api";
 
@@ -48,7 +48,7 @@ const WordAccordion = ({ word, setWords, defaultOpen = false }) => {
 
   const toggleStatus = async (e) => {
     e?.stopPropagation();
-    const next = word.status === "Known" ? "To Learn" : "Known";
+    const next = nextStatus(word.status);
     try {
       const res = await axios.put(`${API_BASE}/updateWord/${word._id}`, { status: next });
       if (res.data) {

@@ -10,7 +10,7 @@ const wordSchema = new mongoose.Schema({
   sentences: [String],
   status: {
     type: String,
-    enum: ["To Learn", "Known"],
+    enum: ["To Learn", "Focus", "Known"],
     default: "To Learn",
   },
   type: {

@@ -29,6 +29,7 @@ const COUNT_OPTIONS = [10, 15, 20, 30, 50, 75, 100];
 function Practice() {
   const t = useTokens();
   const [count, setCount] = useState(20);
+  const [status, setStatus] = useState("To Learn"); // "To Learn" | "Focus" | "Known"
   const [withMcqs, setWithMcqs] = useState(false);
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState(null);
@@ -40,6 +41,7 @@ function Practice() {
     try {
       const res = await axios.post(`${API_BASE}/ai/generate-paragraph`, {
         count,
+        status,
         withMcqs,
       });
       setEntry(res.data);
@@ -112,7 +114,7 @@ function Practice() {
           }}
         >
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
-            <FormControl sx={{ minWidth: 180 }} size="small">
+            <FormControl sx={{ minWidth: 140 }} size="small">
               <InputLabel>Word count</InputLabel>
               <Select
                 value={count}
@@ -128,8 +130,22 @@ function Practice() {
                 ))}
               </Select>
             </FormControl>
+            <FormControl sx={{ minWidth: 140 }} size="small">
+              <InputLabel>Pool</InputLabel>
+              <Select
+                value={status}
+                label="Pool"
+                onChange={(e) => setStatus(e.target.value)}
+                disabled={loading}
+                sx={{ borderRadius: t.radii.md, "& fieldset": { borderColor: t.colors.border } }}
+              >
+                <MenuItem value="To Learn">To Learn</MenuItem>
+                <MenuItem value="Focus">Focus</MenuItem>
+                <MenuItem value="Known">Known</MenuItem>
+              </Select>
+            </FormControl>
             <Typography sx={{ flex: 1, fontSize: 13.5, color: t.colors.textMuted }}>
-              Words are pulled at random from your <b>To Learn</b> list.
+              Pulled at random from your <b>{status}</b> list.
             </Typography>
             <Button
               variant="contained"

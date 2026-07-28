@@ -13,7 +13,7 @@ import {
   ClickAwayListener,
   useTheme,
 } from "@mui/material";
-import { MdContentCopy, MdCheckCircle, MdVolumeUp } from "react-icons/md";
+import { MdContentCopy, MdCheckCircle, MdVolumeUp, MdStar } from "react-icons/md";
 import { HiOutlineSpeakerWave, HiOutlineSpeakerXMark } from "react-icons/hi2";
 import { parseMeaning } from "../../utils/parseMeaning";
 import McqQuiz from "./McqQuiz";
@@ -33,7 +33,7 @@ function speakWord(word, definition) {
 }
 
 // Compact tooltip body for a highlighted word in the paragraph.
-function HighlightTooltip({ word, onMarkKnown, marking, isKnown }) {
+function HighlightTooltip({ word, onMarkKnown, onMarkFocus, marking, isKnown, isFocus }) {
   const { definition, synonyms, antonyms } = parseMeaning(word.meaning);
   return (
     <Box sx={{ maxWidth: 300 }}>
@@ -93,10 +93,10 @@ function HighlightTooltip({ word, onMarkKnown, marking, isKnown }) {
         </Box>
       )}
       {(word._id || word.wordId) && (
-        <Box sx={{ mt: 0.75, pt: 0.75, borderTop: "1px solid rgba(255,255,255,0.15)" }}>
+        <Box sx={{ mt: 0.75, pt: 0.75, borderTop: "1px solid rgba(255,255,255,0.15)", display: "flex", gap: 0.75, flexWrap: "wrap" }}>
           {isKnown ? (
             <Typography sx={{ color: "#86EFAC", fontWeight: 700, display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.72rem" }}>
-              <MdCheckCircle size={13} /> Marked as Known
+              <MdCheckCircle size={13} /> Known
             </Typography>
           ) : (
             <Button
@@ -119,7 +119,35 @@ function HighlightTooltip({ word, onMarkKnown, marking, isKnown }) {
               }}
               variant="outlined"
             >
-              {marking ? "Marking…" : "I know this word"}
+              {marking ? "…" : "I know this"}
+            </Button>
+          )}
+          {isFocus ? (
+            <Typography sx={{ color: "#C4B5FD", fontWeight: 700, display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.72rem" }}>
+              <MdStar size={13} /> Focus
+            </Typography>
+          ) : !isKnown && (
+            <Button
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMarkFocus?.();
+              }}
+              disabled={marking}
+              startIcon={<MdStar size={13} />}
+              sx={{
+                py: 0.25,
+                px: 1,
+                fontSize: "0.68rem",
+                textTransform: "none",
+                color: "#C4B5FD",
+                borderColor: "rgba(196,181,253,0.4)",
+                borderRadius: "4px",
+                "&:hover": { bgcolor: "rgba(139,92,246,0.15)", borderColor: "#C4B5FD" },
+              }}
+              variant="outlined"
+            >
+              Focus
             </Button>
           )}
         </Box>
@@ -164,8 +192,10 @@ function highlightParagraph({ paragraph, words, theme, openIdx, setOpenIdx, tool
           <HighlightTooltip
             word={wordObj}
             onMarkKnown={() => tooltipHandlers.onMarkKnown(wordObj)}
+            onMarkFocus={() => tooltipHandlers.onMarkFocus(wordObj)}
             marking={tooltipHandlers.markingId === (wordObj._id || wordObj.wordId)}
             isKnown={tooltipHandlers.knownIds.has(wordObj._id || wordObj.wordId)}
+            isFocus={tooltipHandlers.focusIds.has(wordObj._id || wordObj.wordId)}
           />
         }
         componentsProps={{
@@ -228,6 +258,7 @@ export default function ParagraphView({ entry, onWordMarkedKnown }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [markingId, setMarkingId] = useState(null);
   const [knownIds, setKnownIds] = useState(new Set());
+  const [focusIds, setFocusIds] = useState(new Set());
   const [openIdx, setOpenIdx] = useState(null);
 
   useEffect(() => {
@@ -244,6 +275,7 @@ export default function ParagraphView({ entry, onWordMarkedKnown }) {
     }
     setIsSpeaking(false);
     setKnownIds(new Set());
+    setFocusIds(new Set());
     setOpenIdx(null);
   }, [entry?.paragraph]);
 
@@ -282,15 +314,21 @@ export default function ParagraphView({ entry, onWordMarkedKnown }) {
     }
   };
 
-  const handleMarkKnown = async (word) => {
+  const setStatus = async (word, status) => {
     const id = word._id || word.wordId;
     if (!id || markingId) return;
     setMarkingId(id);
     try {
-      await axios.put(`${API_BASE}/updateWord/${id}`, { status: "Known" });
-      setKnownIds((prev) => new Set(prev).add(id));
-      toast.success(`"${word.word}" marked as Known`);
-      onWordMarkedKnown?.(id);
+      await axios.put(`${API_BASE}/updateWord/${id}`, { status });
+      if (status === "Known") {
+        setKnownIds((prev) => new Set(prev).add(id));
+        setFocusIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+        onWordMarkedKnown?.(id);
+      } else if (status === "Focus") {
+        setFocusIds((prev) => new Set(prev).add(id));
+        setKnownIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+      }
+      toast.success(`"${word.word}" marked as ${status}`);
     } catch (err) {
       toast.error("Failed to update word status");
     } finally {
@@ -298,7 +336,16 @@ export default function ParagraphView({ entry, onWordMarkedKnown }) {
     }
   };
 
-  const tooltipHandlers = { onMarkKnown: handleMarkKnown, markingId, knownIds };
+  const handleMarkKnown = (word) => setStatus(word, "Known");
+  const handleMarkFocus = (word) => setStatus(word, "Focus");
+
+  const tooltipHandlers = {
+    onMarkKnown: handleMarkKnown,
+    onMarkFocus: handleMarkFocus,
+    markingId,
+    knownIds,
+    focusIds,
+  };
 
   return (
     <>
@@ -382,6 +429,7 @@ export default function ParagraphView({ entry, onWordMarkedKnown }) {
           {words.map((w) => {
             const id = w._id || w.wordId;
             const isKnown = id && knownIds.has(id);
+            const isFocus = id && focusIds.has(id);
             return (
               <Tooltip
                 key={id || w.word}
@@ -392,8 +440,10 @@ export default function ParagraphView({ entry, onWordMarkedKnown }) {
                   <HighlightTooltip
                     word={w}
                     onMarkKnown={() => handleMarkKnown(w)}
+                    onMarkFocus={() => handleMarkFocus(w)}
                     marking={markingId === id}
                     isKnown={isKnown}
+                    isFocus={isFocus}
                   />
                 }
                 componentsProps={{

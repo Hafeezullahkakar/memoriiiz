@@ -113,7 +113,7 @@ const GREPlay = () => {
       const list = res?.data || [];
       setWords(list);
       const filtered = list.filter((w) =>
-        quizType === "Known" ? w.status === "Known" : (w.status === "To Learn" || !w.status)
+        quizType === "Known" ? w.status === "Known" : quizType === "Focus" ? w.status === "Focus" : (w.status === "To Learn" || !w.status)
       );
       if (filtered.length >= 5) {
         generateQuiz(filtered);
@@ -327,7 +327,7 @@ const GREPlay = () => {
 
   const handleResetAll = () => {
     const filtered = words.filter((w) =>
-      quizType === "Known" ? w.status === "Known" : (w.status === "To Learn" || !w.status)
+      quizType === "Known" ? w.status === "Known" : quizType === "Focus" ? w.status === "Focus" : (w.status === "To Learn" || !w.status)
     );
     if (filtered.length >= 5) {
       generateQuiz(filtered);
@@ -500,6 +500,7 @@ const GREPlay = () => {
         }}
       >
         <ToggleButton value="To Learn">To Learn</ToggleButton>
+        <ToggleButton value="Focus">Focus</ToggleButton>
         <ToggleButton value="Known">Known</ToggleButton>
       </ToggleButtonGroup>
 

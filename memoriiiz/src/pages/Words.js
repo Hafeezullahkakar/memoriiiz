@@ -45,17 +45,20 @@ const Words = () => {
   const counts = useMemo(() => {
     const total = words.length;
     const known = words.filter((w) => w.status === "Known").length;
-    const toLearn = total - known;
-    return { total, known, toLearn };
+    const focus = words.filter((w) => w.status === "Focus").length;
+    const toLearn = total - known - focus;
+    return { total, known, focus, toLearn };
   }, [words]);
 
   // ─── filtered ─────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let out = words;
     if (status !== "All") {
-      out = out.filter((w) =>
-        status === "Known" ? w.status === "Known" : (w.status === "To Learn" || !w.status)
-      );
+      out = out.filter((w) => {
+        if (status === "Known") return w.status === "Known";
+        if (status === "Focus") return w.status === "Focus";
+        return w.status === "To Learn" || !w.status; // "To Learn"
+      });
     }
     if (letter !== "All") {
       out = out.filter((w) => (w.word || "").charAt(0).toUpperCase() === letter);
@@ -70,7 +73,12 @@ const Words = () => {
   const availableLetters = useMemo(() => {
     const set = new Set();
     words
-      .filter((w) => status === "All" || (status === "Known" ? w.status === "Known" : (w.status === "To Learn" || !w.status)))
+      .filter((w) => {
+        if (status === "All") return true;
+        if (status === "Known") return w.status === "Known";
+        if (status === "Focus") return w.status === "Focus";
+        return w.status === "To Learn" || !w.status;
+      })
       .forEach((w) => {
         const first = (w.word || "").charAt(0).toUpperCase();
         if (first) set.add(first);
@@ -99,8 +107,9 @@ const Words = () => {
           stats={[
             { label: "Total", value: counts.total, tone: "neutral" },
             { label: "To Learn", value: counts.toLearn, tone: "toLearn" },
+            { label: "Focus", value: counts.focus, tone: "primary" },
             { label: "Known", value: counts.known, tone: "known" },
-            { label: "Showing", value: filtered.length, tone: "primary" },
+            { label: "Showing", value: filtered.length, tone: "neutral" },
           ]}
         />
 
@@ -147,6 +156,7 @@ const Words = () => {
             }}
           >
             <ToggleButton value="To Learn">To Learn</ToggleButton>
+            <ToggleButton value="Focus">Focus</ToggleButton>
             <ToggleButton value="Known">Known</ToggleButton>
             <ToggleButton value="All">All</ToggleButton>
           </ToggleButtonGroup>

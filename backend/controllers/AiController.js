@@ -242,19 +242,24 @@ exports.generateParagraph = async (req, res) => {
     Math.min(100, parseInt(req.body?.count, 10) || 20)
   );
   const status = req.body?.status || "To Learn";
-  const type = req.body?.type || "GRE";
+  // `type` is optional now that GRE + General are unified. If omitted, we
+  // sample from all words matching the status; pass "GRE" or "General"
+  // explicitly to restrict.
+  const type = req.body?.type || null;
   const withMcqs = !!req.body?.withMcqs;
 
   try {
+    const match = { status };
+    if (type) match.type = type;
     const sample = await Word.aggregate([
-      { $match: { type, status } },
+      { $match: match },
       { $sample: { size: count } },
       { $project: { word: 1, meaning: 1 } },
     ]);
 
     if (!sample.length) {
       return res.status(404).json({
-        message: `No "${status}" ${type} words found in the database.`,
+        message: `No "${status}"${type ? ` ${type}` : ""} words found in the database.`,
       });
     }
 
