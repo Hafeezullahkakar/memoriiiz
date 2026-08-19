@@ -90,8 +90,8 @@ const callOpenCode = async ({
 // -----------------------------------------------------------------------------
 
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
-const GROQ_DEFAULT_MODEL_CHAT = "llama-3.3-70b-versatile";
-const GROQ_DEFAULT_MODEL_PARAGRAPH = "llama-3.3-70b-versatile";
+const GROQ_DEFAULT_MODEL_CHAT = "openai/gpt-oss-120b";
+const GROQ_DEFAULT_MODEL_PARAGRAPH = "openai/gpt-oss-120b";
 
 const callGroq = async ({ systemPrompt, messages, generationConfig, modelType, jsonMode }) => {
   const apiKey = process.env.GROQ_API_KEY;
